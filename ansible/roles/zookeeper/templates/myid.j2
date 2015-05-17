@@ -1,0 +1,5 @@
+{% if groups.zookeeper is defined %}
+{% for host in groups.zookeeper -%}
+{{ loop.index if ansible_hostname == host else '' }}
+{%- endfor %}
+{% endif %}

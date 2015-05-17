@@ -1,0 +1,25 @@
+# -*- mode: ruby; coding: utf-8; -*-
+# vi: set ft=ruby :
+
+Vagrant.configure('2') do |config|
+  config.vm.box = 'yungsang/boot2docker'
+
+  config.vm.provider 'virtualbox' do |v|
+    # On VirtualBox, we don't have guest additions or a functional vboxsf
+    # in TinyCore Linux, so tell Vagrant that so it can be smarter.
+    v.check_guest_additions = false
+    v.functional_vboxsf     = false
+    v.name = 'hina-docker-host'
+  end
+
+  # b2d doesn't support NFS
+  config.nfs.functional = false
+
+  # b2d doesn't persist filesystem between reboots
+  if config.ssh.respond_to?(:insert_key)
+    config.ssh.insert_key = false
+  end
+
+  config.vm.provision 'shell', inline: 'mkdir -p /opt/squid/cache'
+  config.vm.network :forwarded_port, guest: 3128, host: 33128
+end

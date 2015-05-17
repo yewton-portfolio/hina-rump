@@ -1,0 +1,6 @@
+---
+- name: restart Kafka
+  supervisorctl: >-
+    name=kafka
+    state=restarted
+  become: yes

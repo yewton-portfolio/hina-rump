@@ -1,0 +1,21 @@
+---
+- name: disable services
+  service: name={{ item }} state=stopped enabled=no
+  with_items: "{{ disabled_services }}"
+  failed_when: no
+  ignore_errors: yes
+  become: yes
+
+- name: enable services
+  service: name={{ item }} state=started enabled=yes
+  with_items:
+    - crond
+    - ipmi
+    - network
+    - ntpd
+    - rsyslog
+    - snmpd
+    - sysstat
+  ignore_errors: yes
+  failed_when: no
+  become: yes

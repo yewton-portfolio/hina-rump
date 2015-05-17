@@ -1,0 +1,5 @@
+---
+java_jre_base_url: http://download.oracle.com/otn-pub/java/jdk/8u45-b14
+java_jre_sha256sum: 7e64f14a8d264099b6d30a75338e946b9aefad0946272a858be0b83dee84f097
+java_jre_filename: jre-8u45-linux-x64.rpm
+java_home: /usr/java/default

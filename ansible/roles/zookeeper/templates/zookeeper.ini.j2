@@ -1,0 +1,15 @@
+[program:zookeeper]
+command = {{ zookeeper_physical_prefix }}/bin/zkServer.sh start-foreground
+user={{ zookeeper_user_username }}
+autostart=true
+autorestart=true
+; cf. https://issues.apache.org/jira/browse/ZOOKEEPER-2079
+stopsignal=KILL
+stopasgroup=true
+stdout_logfile={{ zookeeper_log_dir }}/supervisord-zookeeper.out
+stdout_logfile_backups=10
+stdout_logfile_maxbytes=20MB
+stderr_logfile={{ zookeeper_log_dir }}/supervisord-zookeeper.err
+stderr_logfile_backups=10
+stderr_logfile_maxbytes=20MB
+environment=SERVER_JVMFLAGS="-Djava.net.preferIPv4Stack=true"

@@ -1,0 +1,6 @@
+---
+- include: ntp.yml
+- include: selinux.yml
+- include: time.yml
+- include: service.yml
+- include: hosts.yml

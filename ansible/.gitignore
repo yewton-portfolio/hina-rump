@@ -1,0 +1,7 @@
+*.pyc
+/.bundle/
+/.data/
+/.kitchen/
+/.vagrant/
+/bin/
+/vendor/bundle/

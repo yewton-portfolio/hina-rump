@@ -1,0 +1,12 @@
+tickTime={{ zookeeper_tick_time}}
+dataDir={{ zookeeper_data_dir }}
+clientPort={{ zookeeper_client_port }}
+initLimit={{ zookeeper_init_limit }}
+syncLimit={{ zookeeper_sync_limit }}
+quorumListenOnAllIPs=true
+
+{% if groups.zookeeper is defined and groups.zookeeper|length > 1 %}
+{% for host in groups.zookeeper %}
+server.{{ loop.index }}={{ host }}:{{ zookeeper_leader_port }}:{{ zookeeper_leader_election_port }}
+{% endfor %}
+{% endif %}

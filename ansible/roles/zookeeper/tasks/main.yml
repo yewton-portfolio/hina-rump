@@ -1,0 +1,94 @@
+---
+- name: be sure ZooKeeper user group is created
+  group: name={{ zookeeper_user_group }} gid={{ zookeeper_user_gid }}
+  become: yes
+
+- name: be sure ZooKeeper user is created
+  user: >-
+     name={{ zookeeper_user_username }}
+     uid={{ zookeeper_user_uid }}
+     group={{ zookeeper_user_group }}
+     home={{ zookeeper_home }}
+  become: yes
+
+- name: check if ZooKeeper is installed
+  stat: path={{ zookeeper_physical_prefix }}/bin/zkServer.sh get_md5=no
+  register: zk
+
+- name: download the ZooKeeper release archive file
+  get_url: >-
+    url={{ zookeeper_bin_archive_url }}
+    dest={{ zookeeper_bin_archive_path }}
+    mode=0644
+    timeout=10
+    sha256sum={{ zookeeper_bin_archive_sha256 }}
+  when: not zk.stat.exists
+  environment: proxy_env
+
+- name: extract the ZooKeeper release archive file
+  command: tar -xzf {{ zookeeper_bin_archive_path }}
+  args:
+    chdir: "{{ build_src_directory }}"
+    creates: "{{ zookeeper_bin_path }}"
+  when: not zk.stat.exists
+
+- name: install ZooKeeper
+  command: cp -rp {{ zookeeper_bin_path }} {{ zookeeper_physical_prefix }}
+  args:
+    creates: "{{ zookeeper_physical_prefix }}"
+  become: yes
+
+- name: create canonical link
+  file: >-
+    state=link
+    dest={{ zookeeper_prefix }}
+    src={{ zookeeper_physical_prefix }}
+  become: yes
+
+- name: be sure required directories are exist
+  command: "mkdir -p {{ item }}"
+  args:
+    creates: "{{ item }}"
+  with_items: &required_dirs
+    - "{{ zookeeper_log_dir }}"
+    - "{{ zookeeper_data_dir }}"
+  become: yes
+
+- name: be sure required directories have proper permissions
+  file: >-
+    path={{ item }}
+    state=directory
+    owner={{ zookeeper_user_username }}
+    group={{ zookeeper_user_group }}
+    mode=0755
+  with_items: *required_dirs
+  become: yes
+
+- name: put the supervisor config file
+  template: >-
+    src=zookeeper.ini.j2
+    dest={{ supervisor_include_dir }}/zookeeper.ini
+    mode=0644
+  become: yes
+  notify:
+    - restart ZooKeeper
+
+- name: put the ZooKeeper configuration file
+  template: >-
+    src=zoo.cfg.j2
+    dest={{ zookeeper_physical_prefix }}/conf/zoo.cfg
+    mode=0644
+  become: yes
+  notify:
+    - restart ZooKeeper
+
+- name: put the myid file
+  template: >-
+    src=myid.j2
+    dest={{ zookeeper_data_dir }}/myid
+    mode=0644
+  become: yes
+
+- name: be sure ZooKeeper is supervised
+  supervisorctl: name=zookeeper state=started
+  become: yes

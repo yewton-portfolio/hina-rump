@@ -1,0 +1,8 @@
+---
+kafka_conf_dir: "{{ kafka_home }}/configs"
+kafka_bin_name: kafka_{{ kafka_scala_version }}-{{ kafka_version }}
+kafka_bin_path: "{{ build_src_directory}}/{{ kafka_bin_name }}"
+kafka_bin_archive_name: "{{kafka_bin_name}}.tgz"
+kafka_bin_archive_path: "{{ build_src_directory}}/{{ kafka_bin_archive_name }}"
+kafka_bin_archive_url: "{{ kafka_bin_archive_base_url }}/{{ kafka_version }}/{{ kafka_bin_archive_name}}"
+kafka_physical_prefix: "{{ kafka_prefix }}_{{ kafka_version }}"

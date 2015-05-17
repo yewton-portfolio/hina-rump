@@ -1,0 +1,7 @@
+---
+zookeeper_bin_name: zookeeper-{{ zookeeper_version }}
+zookeeper_bin_path: "{{ build_src_directory}}/{{ zookeeper_bin_name }}"
+zookeeper_bin_archive_name: "{{ zookeeper_bin_name }}.tar.gz"
+zookeeper_bin_archive_path: "{{ build_src_directory}}/{{ zookeeper_bin_archive_name }}"
+zookeeper_bin_archive_url: "{{ zookeeper_bin_archive_base_url }}/zookeeper-{{ zookeeper_version }}/{{ zookeeper_bin_archive_name}}"
+zookeeper_physical_prefix: "{{ zookeeper_prefix }}_{{ zookeeper_version }}"

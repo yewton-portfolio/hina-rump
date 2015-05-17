@@ -1,0 +1,44 @@
+---
+system_encodings: ja_JP.UTF-8
+
+selinux_stat: disabled
+
+zoneinfo_path: /usr/share/zoneinfo/Asia/Tokyo
+
+clock_zone: Asia/Tokyo
+
+ntp_servers:
+  - 0.rhel.pool.ntp.org
+  - 1.rhel.pool.ntp.org
+  - 2.rhel.pool.ntp.org
+
+ntp_restricts:
+  - content: "default kod nomodify notrap nopeer noquery"
+  - content: "-6 default kod nomodify notrap nopeer noquery"
+  - content: "ntp_restricts: 127.0.0.1"
+  - content: "ntp_restricts: -6 ::1"
+
+disabled_services:
+  - acpid
+  - avahi-daemon
+  - bluetooth
+  - cups
+  - gpm
+  - hidd
+  - mcstrans
+  - mdmonitor
+  - messagebus
+  - netfs
+  - nfslock
+  - pcscd
+  - restorecond
+  - rpcbind
+  - rpcgssd
+  - rpcidmapd
+  - xfs
+  - xinetd
+  - yum-cron
+  - ip6tables
+  - iptables
+
+iface: 'eth0'

@@ -1,0 +1,2 @@
+---
+java_jre_download_path: "{{ build_src_directory }}/{{ java_jre_filename }}"

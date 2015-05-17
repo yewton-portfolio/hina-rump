@@ -1,0 +1,64 @@
+---
+- name: be sure easy_install is installed
+  yum: name=python-setuptools
+  become: yes
+
+- name: check if Supervisor is installed
+  command: which supervisorctl
+  ignore_errors: yes
+  failed_when: no
+  register: sv_exists
+
+- name: be sure Supervisor is installed
+  command: easy_install supervisor==3.1.3
+  become: yes
+  changed_when: no
+  when: sv_exists.rc != 0
+
+- name: be sure required directories are exist
+  command: "mkdir -p {{ item }}"
+  args:
+    creates: "{{ item }}"
+  with_items: &required_dirs
+    - "{{ supervisor_log_dir }}"
+    - "{{ supervisor_include_dir }}"
+  become: yes
+
+- name: be sure required directories have proper permissions
+  file: >-
+    path={{ item }}
+    state=directory
+    owner=root
+    group=root
+    mode=0755
+  with_items: *required_dirs
+  become: yes
+
+- name: put the root configuration file
+  template: >-
+    src=supervisord.conf.j2
+    dest=/etc/supervisord.conf
+    mode=0644
+  become: yes
+  notify:
+    - reload Supervisor
+
+- name: put the init script
+  copy: >-
+    src=supervisord
+    dest=/etc/init.d/supervisord
+    owner=root
+    group=root
+    mode=0755
+  become: yes
+
+- name: check if any Supervisor process exist
+  shell: pgrep supervisord
+  register: sv
+  ignore_errors: yes
+  failed_when: no
+
+- name: enable service
+  service: name=supervisord state=started enabled=yes
+  become: yes
+  when: sv.rc != 0

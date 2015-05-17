@@ -1,0 +1,30 @@
+---
+- name: libselinux-python
+  yum: name=libselinux-python
+
+- name: be sure build user group is created
+  group: name={{ build_user_group }} gid={{ build_user_gid }}
+  become: yes
+
+- name: be sure build user is created
+  user: >-
+     name={{ build_user_username }}
+     uid={{ build_user_uid }}
+     group={{ build_user_group }}
+     groups={{ build_user_groups }}
+  become: yes
+
+- name: setup authorized_keys for build user
+  authorized_key: >-
+     user={{ build_user_username }}
+     key="{{ lookup('file', build_user_authorized_key_file) }}"
+  when: build_user_authorized_key_file is defined
+  become: yes
+
+- name: be sure wheel group can sudo without password
+  lineinfile: >-
+    dest=/etc/sudoers
+    state=present
+    regexp='^%wheel'
+    line='%wheel ALL=(ALL) NOPASSWD: ALL'
+  become: yes

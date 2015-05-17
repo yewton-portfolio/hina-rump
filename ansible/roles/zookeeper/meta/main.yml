@@ -1,0 +1,5 @@
+---
+dependencies:
+  - { role: build_essentials }
+  - { role: supervisor }
+  - { role: java }

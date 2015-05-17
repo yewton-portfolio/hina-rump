@@ -1,0 +1,7 @@
+---
+- name: be sure SELinux is configured
+  template: >-
+    src=selinux.j2
+    dest=/etc/selinux/config
+    mode=644
+  become: yes

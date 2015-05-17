@@ -1,0 +1,19 @@
+---
+- name: be sure the build directory is present
+  file: >-
+    path={{ build_src_directory }}
+    state=directory
+    owner={{ build_user_username }}
+    group={{ build_user_group }}
+    mode=0755
+  become: yes
+
+- name: be sure build essentials are installed
+  yum: name={{ item }}
+  with_items:
+    - autoconf
+    - gcc
+    - gcc-c++
+    - make
+    - tar
+  become: yes

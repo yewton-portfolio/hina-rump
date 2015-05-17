@@ -1,0 +1,97 @@
+# coding: utf-8
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+require 'vagrant/util/keypair'
+
+Vagrant.require_version '>= 1.7.0'
+
+data_dir = Pathname.new(File.expand_path('.data', Dir.pwd))
+data_dir.mkdir unless data_dir.directory?
+pub_key = data_dir.join('vagrant_public_key')
+priv_key = data_dir.join('vagrant_private_key')
+if !(pub_key.exist? && priv_key.exist?)
+  _, priv, openssh_key = Vagrant::Util::Keypair.create
+  [
+    { path: pub_key, content: openssh_key, mode: 0644 },
+    { path: priv_key, content: priv, mode: 0600 }
+  ].each do |c|
+    c[:path].open('w+') do |f|
+      f.write(c[:content])
+    end
+    c[:path].chmod(c[:mode])
+  end
+  puts 'vagrant key pair created.'
+end
+
+Vagrant.configure('2') do |config|
+  config.ssh.forward_agent = true
+  config.ssh.insert_key = false
+
+  config.vm.define 'squid' do |s|
+    s.vm.provider 'docker' do |d|
+      d.image = 'sameersbn/squid:latest'
+      d.create_args = ['-it']
+      d.name = 'squid'
+      d.ports = ['3128:3128']
+      d.remains_running = true
+      d.vagrant_vagrantfile = './docker-host/Vagrantfile'
+      d.volumes = ['/opt/squid/cache:/var/spool/squid3']
+      d.env = {
+        'CACHE_MAX_SIZE' => 20480,
+        'CACHE_MAX_OBJECT_SIZE' => 2048,
+        'CACHE_MAX_MEM' => 512
+      }
+    end
+  end
+
+  kafka_cluster_size = 3
+  nodes = []
+  (1..kafka_cluster_size).each do |i|
+    name = 'hina-local-kafka%02d' % [i]
+    nodes << name
+    config.vm.define name do |d|
+      d.vm.box = 'opscode-centos-6.5'
+      d.vm.box_url = 'http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_centos-6.5_chef-provisionerless.box'
+      d.vm.hostname = name
+      d.vm.network 'private_network', ip: "192.168.53.10#{i}"
+      d.vm.provider 'virtualbox' do |vb|
+        vb.name = name
+        vb.memory = 512
+        vb.cpus = 1
+      end
+      if i == kafka_cluster_size
+        d.vm.provision :ansible do |a|
+          a.playbook = 'bootstrap.yml'
+          a.limit = 'vagrant'
+          a.verbose = 'vv'
+          a.extra_vars = {
+            ansible_ssh_user: 'vagrant',
+            build_user_authorized_key_file: pub_key.to_s
+          }
+          a.groups = {
+            'nodes' => nodes,
+            'vagrant:children' => ['nodes']
+          }
+        end
+        d.vm.provision :ansible do |a|
+          a.playbook = 'kafka.yml'
+          a.limit = 'vagrant'
+          a.extra_vars = {
+            ansible_ssh_private_key_file: priv_key,
+            iface: 'eth1',
+            proxy_env: {
+              http_proxy: 'http://10.0.2.2:33128',
+              https_proxy: 'http://10.0.2.2:33128'
+            }
+          }
+          a.verbose = 'vv'
+          a.groups = {
+            'zookeeper' => nodes,
+            'kafka' => nodes,
+            'vagrant:children' => ['zookeeper', 'kafka']
+          }
+        end
+      end
+    end
+  end
+end

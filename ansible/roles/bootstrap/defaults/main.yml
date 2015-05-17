@@ -1,0 +1,6 @@
+---
+build_user_username: blacksmith
+build_user_uid: 1001
+build_user_group: blacksmith
+build_user_gid: 1001
+build_user_groups: wheel

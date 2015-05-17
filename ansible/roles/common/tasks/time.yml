@@ -1,0 +1,21 @@
+---
+- name: set locale
+  template: >-
+    src=i18n.j2
+    dest=/etc/sysconfig/i18n
+  become: yes
+
+- name: set clock zone
+  template: >-
+    src=clock.j2
+    dest=/etc/sysconfig/clock
+  become: yes
+
+
+- name: set localtime
+  file: >-
+    state=link
+    src={{ zoneinfo_path }}
+    dest=/etc/localtime
+    force=true
+  become: yes

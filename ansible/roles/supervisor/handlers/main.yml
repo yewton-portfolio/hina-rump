@@ -1,0 +1,4 @@
+---
+- name: reload Supervisor
+  shell: kill -s HUP `pgrep supervisord | head -n 1`
+  become: yes

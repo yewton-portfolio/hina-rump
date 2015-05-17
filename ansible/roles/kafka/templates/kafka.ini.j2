@@ -1,0 +1,14 @@
+[program:kafka]
+command={{ kafka_physical_prefix }}/bin/kafka-server-start.sh {{ kafka_conf_dir }}/server.properties
+user={{ kafka_user_username }}
+autostart=true
+autorestart=true
+stopasgroup=true
+startsecs=10
+startretries=999
+stdout_logfile={{ kafka_log_dir }}/supervisord-kafka.out
+stdout_logfile_backups=10
+stdout_logfile_maxbytes=20MB
+stderr_logfile={{ kafka_log_dir }}/supervisord-kafka.err
+stderr_logfile_backups=10
+stderr_logfile_maxbytes=20MB
