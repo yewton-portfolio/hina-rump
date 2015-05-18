@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant.configure('2') do |config|
-  config.vm.box = 'yungsang/boot2docker'
+  config.vm.box = 'codekitchen/boot2docker'
 
   config.vm.provider 'virtualbox' do |v|
     # On VirtualBox, we don't have guest additions or a functional vboxsf
