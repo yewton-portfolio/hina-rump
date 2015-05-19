@@ -1,4 +1,7 @@
 ---
+- name: libselinux-python
+  yum: name=libselinux-python
+
 - name: configure proxy
   template: >-
     src=proxy.sh.j2
@@ -13,9 +16,6 @@
     state=present
     line='Defaults env_keep += "no_proxy NO_PROXY http_proxy HTTP_PROXY https_proxy HTTPS_PROXY"'
   become: yes
-
-- name: libselinux-python
-  yum: name=libselinux-python
 
 - name: be sure build user group is created
   group: name={{ build_user_group }} gid={{ build_user_gid }}
