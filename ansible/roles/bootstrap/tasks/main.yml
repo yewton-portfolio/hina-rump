@@ -1,4 +1,19 @@
 ---
+- name: configure proxy
+  template: >-
+    src=proxy.sh.j2
+    dest=/etc/profile.d/proxy.sh
+    mode=0644
+  become: yes
+  when: proxy_env is defined
+
+- name: enable proxies on sudo
+  lineinfile: >-
+    dest=/etc/sudoers
+    state=present
+    line='Defaults env_keep += "no_proxy NO_PROXY http_proxy HTTP_PROXY https_proxy HTTPS_PROXY"'
+  become: yes
+
 - name: libselinux-python
   yum: name=libselinux-python
 

@@ -23,7 +23,6 @@
     timeout=10
     sha256sum={{ zookeeper_bin_archive_sha256 }}
   when: not zk.stat.exists
-  environment: proxy_env
 
 - name: extract the ZooKeeper release archive file
   command: tar -xzf {{ zookeeper_bin_archive_path }}

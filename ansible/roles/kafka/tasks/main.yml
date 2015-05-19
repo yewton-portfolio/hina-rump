@@ -23,7 +23,6 @@
     timeout=10
     sha256sum={{ kafka_bin_archive_sha256 }}
   when: not kfk.stat.exists
-  environment: proxy_env
 
 - name: extract the Kafka release archive file
   command: tar -xzf {{ kafka_bin_archive_path }}

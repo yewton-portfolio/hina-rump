@@ -66,7 +66,12 @@ Vagrant.configure('2') do |config|
           a.verbose = 'vv'
           a.extra_vars = {
             ansible_ssh_user: 'vagrant',
-            build_user_authorized_key_file: pub_key.to_s
+            build_user_authorized_key_file: pub_key.to_s,
+            proxy_env: {
+              # 10.0.2.2 はゲストから見たホストの IP
+              http_proxy: 'http://10.0.2.2:33128',
+              https_proxy: 'http://10.0.2.2:33128'
+            }
           }
           a.groups = {
             'nodes' => nodes,
@@ -78,11 +83,7 @@ Vagrant.configure('2') do |config|
           a.limit = 'vagrant'
           a.extra_vars = {
             ansible_ssh_private_key_file: priv_key,
-            iface: 'eth1',
-            proxy_env: {
-              http_proxy: 'http://10.0.2.2:33128',
-              https_proxy: 'http://10.0.2.2:33128'
-            }
+            iface: 'eth1'
           }
           a.verbose = 'vv'
           a.groups = {

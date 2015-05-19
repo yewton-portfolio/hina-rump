@@ -10,7 +10,6 @@
     chdir: "{{ build_src_directory }}"
     creates: "{{ java_jre_download_path }}"
   register: java_download
-  environment: proxy_env
 
 - name: verify JRE package sha256sum
   shell: echo '{{ java_jre_sha256sum }}  {{ java_jre_download_path}}' | sha256sum -c
