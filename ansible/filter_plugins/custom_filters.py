@@ -9,10 +9,14 @@ def surround_by_quote(data):
 def prefixed(data, prefix):
     return ['{0}{1}'.format(prefix, elt) for elt in data]
 
+def suffixed(data, suffix):
+    return ['{0}{1}'.format(elt, suffix) for elt in data]
+
 class FilterModule (object):
     def filters(self):
         return {
             'surround': surround,
             'surround_by_quote': surround_by_quote,
-            'prefixed': prefixed
+            'prefixed': prefixed,
+            'suffixed': suffixed
         }
