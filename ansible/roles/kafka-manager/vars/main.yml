@@ -1,0 +1,7 @@
+---
+kafka_manager_bin_name: kafka-manager-{{ kafka_manager_version }}
+kafka_manager_bin_path: "{{ build_src_directory }}/{{ kafka_manager_bin_name }}"
+kafka_manager_bin_archive_name: "kafka-manager-{{ kafka_manager_version }}.zip"
+kafka_manager_bin_acrhive_path: "{{ build_src_directory }}/{{ kafka_manager_bin_archive_name }}"
+kafka_manager_bin_archive_url: https://dl.dropboxusercontent.com/u/18645856/kafka-manager/{{ kafka_manager_bin_archive_name }}
+kafka_manager_physical_prefix: "{{ kafka_manager_prefix }}_{{ kafka_manager_version }}"

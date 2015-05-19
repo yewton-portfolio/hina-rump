@@ -1,0 +1,64 @@
+---
+- name: check if kafka-manager is installed
+  stat: path={{ kafka_manager_physical_prefix }}/bin/kafka-manager get_md5=no
+  register: km
+
+- name: download the kafka-manager archive file
+  get_url: >-
+    url={{ kafka_manager_bin_archive_url }}
+    dest={{ kafka_manager_bin_acrhive_path }}
+    mode=0644
+    timeout=10
+    sha256sum={{ kafka_manager_bin_archive_sha256 }}
+  when: not km.stat.exists
+
+- name: extract the kafka-manager archive file
+  command: unzip {{ kafka_manager_bin_acrhive_path }}
+  args:
+    chdir: "{{ build_src_directory }}"
+    creates: "{{ kafka_manager_bin_path }}"
+  when: not km.stat.exists
+
+- name: install kafka-manager
+  command: cp -rp {{ kafka_manager_bin_path }} {{ kafka_manager_physical_prefix }}
+  args:
+    creates: "{{ kafka_manager_physical_prefix }}"
+  become: yes
+
+- name: create canonical link
+  file: >-
+    state=link
+    dest={{ kafka_manager_prefix }}
+    src={{ kafka_manager_physical_prefix }}
+  become: yes
+
+- name: create RUNNING_PID directory
+  file: >-
+    state=directory
+    dest=/var/run/kafka-manager
+    owner={{ kafka_user_username }}
+    group={{ kafka_user_group }}
+    mode=0755
+  become: yes
+
+- name: put the supervisor config file
+  template: >-
+    src=kafka-manager.ini.j2
+    dest={{ supervisor_include_dir }}/kafka-manager.ini
+    mode=0644
+  become: yes
+  notify:
+    - restart kafka-manager
+
+- name: put the kafka-manager configuration file
+  template: >-
+    src=application.conf.j2
+    dest={{ kafka_manager_physical_prefix }}/conf/application.conf
+    mode=0644
+  become: yes
+  notify:
+    - restart kafka-manager
+
+- name: be sure kafka-manager is supervised
+  supervisorctl: name=kafka-manager state=started
+  become: yes

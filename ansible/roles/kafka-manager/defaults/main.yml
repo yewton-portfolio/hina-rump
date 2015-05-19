@@ -1,0 +1,6 @@
+---
+kafka_manager_version: 1.2.3
+kafka_manager_bin_archive_sha256: efae14f31a65f8e4a929e29bfd87ad9eabc94d3d2d23d78440c1d064397248bd
+kafka_manager_prefix: /opt/kafka-manager
+kafka_manager_sbt_version: 0.13.5
+kafka_manager_application_secret: noh5iegay0pohwohniiShad8yol4mang

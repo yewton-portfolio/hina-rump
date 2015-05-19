@@ -1,7 +1,0 @@
----
-- name: install sbt
-  yum: >-
-    name=http://dl.bintray.com/sbt/rpm/sbt-0.13.5.rpm
-    state=present
-  environment:
-    LC_ALL: C

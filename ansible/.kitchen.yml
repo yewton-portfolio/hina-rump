@@ -19,6 +19,7 @@ platforms:
       run_command: /usr/bin/supervisord -c /var/tmp/docker-supervisord.conf
       use_cache: true
       wait_for_sshd: true
+      instance_name: hina-kitchen-docker
       provision_command:
         # hostkey 作成する
         - service sshd start && service sshd stop

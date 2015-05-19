@@ -1,0 +1,14 @@
+[program:kafka-manager]
+command={{ kafka_manager_physical_prefix }}/bin/kafka-manager -Dhttp.port=8080 -Dpidfile.path=/var/run/kafka-manager/RUNNING_PID
+user={{ kafka_user_username }}
+autostart=true
+autorestart=true
+stopasgroup=true
+startsecs=10
+startretries=999
+stdout_logfile={{ kafka_log_dir }}/supervisord-kafka-manager.out
+stdout_logfile_backups=10
+stdout_logfile_maxbytes=20MB
+stderr_logfile={{ kafka_log_dir }}/supervisord-kafka-manager.err
+stderr_logfile_backups=10
+stderr_logfile_maxbytes=20MB

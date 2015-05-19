@@ -1,3 +1,105 @@
 ---
-- include: install.yml
-- include: manager.yml
+- name: be sure Kafka user group is created
+  group: name={{ kafka_user_group }} gid={{ kafka_user_gid }}
+  become: yes
+
+- name: be sure Kafka user is created
+  user: >-
+     name={{ kafka_user_username }}
+     uid={{ kafka_user_uid }}
+     group={{ kafka_user_group }}
+     home={{ kafka_home }}
+  become: yes
+
+- name: check if Kafka is installed
+  stat: path={{ kafka_physical_prefix }}/bin/kafka-server-start.sh get_md5=no
+  register: kfk
+
+- name: download the Kafka release archive file
+  get_url: >-
+    url={{ kafka_bin_archive_url }}
+    dest={{ kafka_bin_archive_path }}
+    mode=0644
+    timeout=10
+    sha256sum={{ kafka_bin_archive_sha256 }}
+  when: not kfk.stat.exists
+
+- name: extract the Kafka release archive file
+  command: tar -xzf {{ kafka_bin_archive_path }}
+  args:
+    chdir: "{{ build_src_directory }}"
+    creates: "{{ kafka_bin_path }}"
+  when: not kfk.stat.exists
+
+- name: install Kafka
+  command: cp -rp {{ kafka_bin_path }} {{ kafka_physical_prefix }}
+  args:
+    creates: "{{ kafka_physical_prefix }}"
+  become: yes
+
+- name: create canonical link
+  file: >-
+    state=link
+    dest={{ kafka_prefix }}
+    src={{ kafka_physical_prefix }}
+  become: yes
+
+- name: be sure required directories are exist
+  command: "mkdir -p {{ item }}"
+  args:
+    creates: "{{ item }}"
+  with_items:  &required_dirs
+    - "{{ kafka_log_dir }}"
+    - "{{ kafka_data_dir }}"
+  become: yes
+
+- name: be sure required directories have proper permissions
+  file: >-
+    path={{ item }}
+    state=directory
+    owner={{ kafka_user_username }}
+    group={{ kafka_user_group }}
+    mode=0755
+  with_items: *required_dirs
+  become: yes
+
+- name: be sure log data directories are exist
+  file: >-
+    path={{ kafka_data_dir }}/{{ item }}
+    state=directory
+    owner={{ kafka_user_username }}
+    group={{ kafka_user_group }}
+    mode=0755
+  with_items: kafka_data_log_dirs
+  become: yes
+
+- name: create config dir
+  file: >-
+    path={{ kafka_conf_dir }}
+    state=directory
+    mode=0755
+    owner={{ kafka_user_username }}
+    group={{ kafka_user_group }}
+  become: yes
+
+- name: put the supervisor config file
+  template: >-
+    src=kafka.ini.j2
+    dest={{ supervisor_include_dir }}/kafka.ini
+    mode=0644
+  become: yes
+  notify:
+    - restart Kafka
+
+- name: put the Kafka configuration file
+  template: >-
+    src=server.properties.j2
+    dest={{ kafka_conf_dir }}/server.properties
+    mode=0644
+  become: yes
+  notify:
+    - restart Kafka
+
+- name: be sure Kafka is supervised
+  supervisorctl: name=kafka state=started
+  become: yes

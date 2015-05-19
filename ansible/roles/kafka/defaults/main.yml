@@ -16,9 +16,3 @@ kafka_user_uid: 813
 kafka_user_group: kafka
 kafka_user_gid: 813
 kafka_home: /home/kafka
-
-kafka_manager_ref: a4495bf94b439b822039a2a6daa3194ee6fcbd7c
-kafka_manager_archive_sha256: b556cf32431ea57f38221d212475af5d8123037f550226bc5b1c10f4b7158404
-kafka_manager_prefix: /opt/kafka-manager
-kafka_manager_sbt_version: 0.13.5
-kafka_manager_sbt_sha256: b7e6e6ea5f4d44ef8a8ef2f7d23d03ae39de085ddc8aefcebf5cf77ee458fb17
