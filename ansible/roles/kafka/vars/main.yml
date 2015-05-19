@@ -3,6 +3,15 @@ kafka_conf_dir: "{{ kafka_home }}/configs"
 kafka_bin_name: kafka_{{ kafka_scala_version }}-{{ kafka_version }}
 kafka_bin_path: "{{ build_src_directory}}/{{ kafka_bin_name }}"
 kafka_bin_archive_name: "{{kafka_bin_name}}.tgz"
-kafka_bin_archive_path: "{{ build_src_directory}}/{{ kafka_bin_archive_name }}"
+kafka_bin_archive_path: "{{ build_src_directory }}/{{ kafka_bin_archive_name }}"
 kafka_bin_archive_url: "{{ kafka_bin_archive_base_url }}/{{ kafka_version }}/{{ kafka_bin_archive_name}}"
 kafka_physical_prefix: "{{ kafka_prefix }}_{{ kafka_version }}"
+
+kafka_manager_dirname: "kafka-manager-{{ kafka_manager_ref }}"
+kafka_manager_path: "{{ build_src_directory }}/{{ kafka_manager_dirname }}"
+kafka_manager_archive_name: "kafka-manager-{{ kafka_manager_ref }}.zip"
+kafka_manager_acrhive_path: "{{ build_src_directory }}/{{ kafka_manager_archive_name }}"
+kafka_manager_physical_prefix: "{{ kafka_manager_prefix }}_{{ kafka_manager_ref }}"
+kafka_manager_archive_url: https://github.com/yahoo/kafka-manager/archive/{{ kafka_manager_ref }}.zip
+kafka_manager_sbt_url: http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/{{ kafka_manager_sbt_version }}/sbt-launch.jar
+kafka_manager_sbt_path: "{{ kafka_manager_path }}/sbt-launch.jar"

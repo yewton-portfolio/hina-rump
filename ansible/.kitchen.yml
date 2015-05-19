@@ -10,8 +10,6 @@ provisioner:
   ansible_verbosity: 2
   playbook: kitchen-docker.yml
   hosts: localhost
-  extra_vars:
-    proxy_env: {}
 
 platforms:
   - name: centos6

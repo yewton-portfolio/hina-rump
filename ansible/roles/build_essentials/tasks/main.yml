@@ -16,4 +16,5 @@
     - gcc-c++
     - make
     - tar
+    - unzip
   become: yes
