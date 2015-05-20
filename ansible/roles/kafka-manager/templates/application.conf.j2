@@ -59,11 +59,10 @@ logger.play=INFO
 # Logger provided to your application:
 logger.application=DEBUG
 
-kafka-manager.zkhosts="kafka-manager-zookeeper:2181"
 {% if groups.zookeeper is defined %}
-kafka-manager.zkhosts={{ groups.zookeeper|suffixed(':{0}'.format(zookeeper_client_port))|join(',') }}
+kafka-manager.zkhosts="{{ groups.zookeeper|suffixed(':{0}'.format(zookeeper_client_port))|join(',') }}"
 {% else %}
-kafka-manager.zkhosts=localhost:{{ zookeeper_client_port }}
+kafka-manager.zkhosts="localhost:{{ zookeeper_client_port }}"
 {% endif %}
 
 pinned-dispatcher.type="PinnedDispatcher"

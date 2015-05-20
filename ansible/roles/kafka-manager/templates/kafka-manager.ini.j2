@@ -1,5 +1,9 @@
 [program:kafka-manager]
-command={{ kafka_manager_physical_prefix }}/bin/kafka-manager -Dhttp.port=8080 -Dpidfile.path=/var/run/kafka-manager/RUNNING_PID
+command={{ kafka_manager_physical_prefix }}/bin/kafka-manager
+    -Dhttp.port=8080
+    -Dconfig.file={{ kafka_manager_physical_prefix }}/conf/application.conf
+    -Dlogger.file={{ kafka_manager_physical_prefix }}/conf/logger.xml
+    -Dpidfile.path=/var/run/kafka-manager/RUNNING_PID
 user={{ kafka_user_username }}
 autostart=true
 autorestart=true

@@ -79,7 +79,7 @@ Vagrant.configure('2') do |config|
           }
         end
         d.vm.provision :ansible do |a|
-          a.playbook = 'kafka.yml'
+          a.playbook = 'site.yml'
           a.limit = 'vagrant'
           a.extra_vars = {
             ansible_ssh_private_key_file: priv_key,
@@ -89,6 +89,7 @@ Vagrant.configure('2') do |config|
           a.groups = {
             'zookeeper' => nodes,
             'kafka' => nodes,
+            'kafka-manager' => ['hina-local-kafka01'],
             'vagrant:children' => ['zookeeper', 'kafka']
           }
         end

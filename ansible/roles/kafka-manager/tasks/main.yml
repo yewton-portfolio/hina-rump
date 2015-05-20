@@ -41,6 +41,15 @@
     mode=0755
   become: yes
 
+- name: create log directory
+  file: >-
+    path={{ kafka_manager_log_dir }}
+    state=directory
+    owner={{ kafka_user_username }}
+    group={{ kafka_user_group }}
+    mode=0755
+  become: yes
+
 - name: put the supervisor config file
   template: >-
     src=kafka-manager.ini.j2
@@ -50,10 +59,19 @@
   notify:
     - restart kafka-manager
 
-- name: put the kafka-manager configuration file
+- name: put the kafka-manager appliction configuration file
   template: >-
     src=application.conf.j2
     dest={{ kafka_manager_physical_prefix }}/conf/application.conf
+    mode=0644
+  become: yes
+  notify:
+    - restart kafka-manager
+
+- name: put the kafka-manager logger configuration file
+  template: >-
+    src=logger.xml.j2
+    dest={{ kafka_manager_physical_prefix }}/conf/logger.xml
     mode=0644
   become: yes
   notify:

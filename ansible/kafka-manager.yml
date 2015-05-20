@@ -1,0 +1,4 @@
+---
+- hosts: kafka-manager
+  roles:
+    - kafka-manager
