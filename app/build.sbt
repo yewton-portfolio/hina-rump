@@ -29,7 +29,7 @@ lazy val appActor = Common.libProject("app-actor")
 
 lazy val appCore = Common.libProject("app-core")
   .settings(
-  libraryDependencies ++= guiceDeps)
+  libraryDependencies ++= guiceDeps ++ configDeps)
   .dependsOn(integrationTest % "it")
   .dependsOn(util, core)
 
