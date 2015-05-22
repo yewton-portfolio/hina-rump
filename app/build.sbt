@@ -2,7 +2,7 @@ import Dependencies._
 
 lazy val appEventBus = Common.actorProject("app-event-bus")
   .settings(
-    libraryDependencies ++= camelDeps ++ akkaCamelDeps ++ camelJettyDeps ++ camelKafkaDeps ++ jsonDeps)
+    libraryDependencies ++= camelDeps ++ akkaCamelDeps ++ camelNettyHttpDeps ++ camelKafkaDeps)
   .dependsOn(appActor)
   .dependsOn(integrationTest % "it")
   .dependsOn(util, core)

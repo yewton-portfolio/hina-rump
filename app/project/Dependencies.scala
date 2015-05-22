@@ -1,4 +1,5 @@
 import sbt._
+import play.core.PlayVersion
 
 object Dependencies {
   val commonDeps: Seq[ModuleID] = Seq(
@@ -22,11 +23,11 @@ object Dependencies {
 
   val httpClientDeps = Seq(
     "net.databinder.dispatch" %% "dispatch-core" % "0.11.1",
-    "com.typesafe.play" %% "play" % play.core.PlayVersion.current % "it",
-    "com.typesafe.play" %% "play-test" % play.core.PlayVersion.current % "it")
+    "com.typesafe.play" %% "play" % PlayVersion.current % "it",
+    "com.typesafe.play" %% "play-test" % PlayVersion.current % "it")
 
-  val jsonDeps = Seq(
-    "com.typesafe.play" %% "play-json" % play.core.PlayVersion.current)
+  val playJsonDeps = Seq(
+    "com.typesafe.play" %% "play-json" % PlayVersion.current)
 
   val configDeps = Seq(
     "com.typesafe" % "config" % "1.2.1")
@@ -45,19 +46,25 @@ object Dependencies {
     "commons-cli" % "commons-cli" % "1.2")
 
   val playDeps = Seq(
-    "com.typesafe.play" %% "play" % play.core.PlayVersion.current,
-    "com.typesafe.play" %% "play-test" % play.core.PlayVersion.current)
+    "com.typesafe.play" %% "play" % PlayVersion.current,
+    "com.typesafe.play" %% "play-test" % PlayVersion.current)
+
+  val jacksonDeps = Seq(
+    "com.fasterxml.jackson.core" % "jackson-databind" % "2.5.3")
 
   val camelVersion = "2.15.1"
   val camelDeps = Seq(
     "org.apache.camel" % "camel-core" % camelVersion,
     "org.apache.camel" % "camel-scala" % camelVersion,
     "org.apache.camel" % "camel-guice" % camelVersion,
-    "org.apache.camel" % "camel-test" % camelVersion,
-    "org.apache.camel" % "camel-jackson" % camelVersion)
+    "org.apache.camel" % "camel-test" % camelVersion)
 
   val camelJettyDeps = Seq(
     "org.apache.camel" % "camel-jetty" % camelVersion)
+
+  val camelNettyHttpDeps = Seq(
+    "org.apache.camel" % "camel-netty4-http" % camelVersion,
+    "org.apache.camel" % "camel-jackson" % camelVersion) ++ jacksonDeps
 
   val camelBeanstalkDeps = Seq(
     "org.apache.camel" % "camel-beanstalk" % camelVersion)
@@ -66,8 +73,7 @@ object Dependencies {
     "org.apache.camel" % "camel-kafka" % camelVersion)
 
   val akkaCamelDeps = Seq(
-    "com.typesafe.akka" %% "akka-camel" % akkaVersion
-  )
+    "com.typesafe.akka" %% "akka-camel" % akkaVersion)
 
   val guiceDeps = Seq(
     "net.codingwell" %% "scala-guice" % "4.0.0-beta5")

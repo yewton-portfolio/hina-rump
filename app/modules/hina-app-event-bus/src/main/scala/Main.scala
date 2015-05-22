@@ -7,11 +7,13 @@ import com.typesafe.config.Config
 import net.codingwell.scalaguice.InjectorExtensions._
 import net.codingwell.scalaguice.ScalaModule
 import org.apache.camel.Exchange
-import org.apache.camel.builder.RouteBuilder
+import org.apache.camel.builder.{ Builder, RouteBuilder }
+import org.apache.camel.model.dataformat.{ JsonLibrary, JsonDataFormat }
 import org.apache.camel.model.rest.RestBindingMode
 
 import scala.beans.BeanProperty
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 object Main extends App {
 
@@ -31,7 +33,7 @@ object Main extends App {
 class MyRouteBuilder() extends RouteBuilder {
   override def configure(): Unit = {
     restConfiguration()
-      .component("jetty")
+      .component("netty4-http")
       .host("localhost")
       .port(8875)
       .dataFormatProperty("prettyPrint", "true")
@@ -42,6 +44,8 @@ class MyRouteBuilder() extends RouteBuilder {
       .produces("application/json")
 
       .post("/{name}/events").to("direct:dirty-topic")
+
+    constant("")
   }
 }
 
@@ -80,16 +84,22 @@ class DirtyTopicConsumer @Inject() (@Named(DirtyTopicProcessor.name) processor: 
 
   override def endpointUri = "direct:dirty-topic"
 
+  case class ErrorResponse(@BeanProperty message: String, @BeanProperty detail: String)
+
+  override def onRouteDefinition = (rd) => rd.onException(classOf[Exception])
+    .handled(true)
+    .setHeader(Exchange.HTTP_RESPONSE_CODE, Builder.constant(500))
+    .setHeader(Exchange.CONTENT_TYPE, Builder.constant("application/json"))
+    .setBody().constant(ErrorResponse("Internal Server Error", Builder.exceptionMessage().toString))
+    .marshal().json(JsonLibrary.Jackson)
+    .end()
+
   override def receive = {
     case msg: CamelMessage =>
-      Option(msg.body) match {
-        case None =>
-          throw new RuntimeException("Body cannot be null")
-        case Some(_) =>
-          val name = msg.headerAs[String]("name").getOrElse(throw new RuntimeException("Name must be specified"))
-          val body = msg.bodyAs[String]
-          processor forward DirtyTopicRequest(name, body)
-      }
+      val name = msg.headerAs[String]("name").getOrElse(throw new RuntimeException("Name must be specified"))
+      val body = msg.bodyAs[String]
+      throw new RuntimeException("wow")
+      processor forward DirtyTopicRequest(name, body)
   }
 
   final override def preRestart(reason: Throwable, message: Option[Any]) = {
@@ -118,7 +128,7 @@ class DirtyTopicProcessor extends Actor {
   def receive = {
     case DirtyTopicRequest(name, body) =>
       // send body to somewhere
-      val response = DirtyTopicResponse(name, "accepted")
+      val response = DirtyTopicResponse(name, body)
       sender() ! CamelMessage(response, Map(
         Exchange.HTTP_RESPONSE_CODE -> 202
       ))
