@@ -1,8 +1,8 @@
 import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorRef, ActorSystem}
+import akka.actor.{ Actor, ActorRef, ActorSystem }
 import akka.camel._
 import com.google.inject._
-import com.google.inject.name.{Named, Names}
+import com.google.inject.name.{ Named, Names }
 import com.typesafe.config.Config
 import net.codingwell.scalaguice.InjectorExtensions._
 import net.codingwell.scalaguice.ScalaModule
@@ -98,7 +98,7 @@ class DirtyTopicConsumer @Inject() (@Named(DirtyTopicProcessor.name) processor: 
 }
 
 case class DirtyTopicRequest(name: String, body: String)
-case class DirtyTopicResponse(@BeanProperty status: String)
+case class DirtyTopicResponse(@BeanProperty name: String, @BeanProperty status: String)
 
 class DirtyTopicModule extends AbstractModule with ScalaModule with GuiceAkkaActorRefProvider {
   override def configure(): Unit = {
@@ -117,7 +117,8 @@ object DirtyTopicProcessor extends NamedActor {
 class DirtyTopicProcessor extends Actor {
   def receive = {
     case DirtyTopicRequest(name, body) =>
-      val response = DirtyTopicResponse("accepted")
+      // send body to somewhere
+      val response = DirtyTopicResponse(name, "accepted")
       sender() ! CamelMessage(response, Map(
         Exchange.HTTP_RESPONSE_CODE -> 202
       ))
