@@ -13,7 +13,7 @@ import org.apache.avro.Schema
 import org.apache.avro.file.DataFileWriter
 import org.apache.avro.generic.{GenericData, GenericDatumWriter, GenericRecord}
 import org.apache.camel.Exchange
-import org.apache.kafka.clients.producer.{Callback, KafkaProducer, ProducerRecord, RecordMetadata}
+import org.apache.kafka.clients.producer._
 
 import scala.beans.BeanProperty
 import scala.concurrent.{ExecutionContext, Promise}
@@ -55,13 +55,11 @@ object DirtyEventProcessor extends NamedActor {
 
 class DirtyEventProcessor @Inject() (val config: Config,
                                      val repository: PublisherTopicRepository,
+                                     val producer: Producer[String, Array[Byte]],
                                      @Named("KafkaIO") val executionContext: ExecutionContext) extends Actor {
   private[this] val producerConfigs: util.Map[String, Object] = config.getConfig("kafka.producer").root().unwrapped()
   producerConfigs.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
   producerConfigs.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer")
-
-  // @todo inject
-  private[this] val producer: KafkaProducer[String, Array[Byte]] = new KafkaProducer(producerConfigs)
 
   private[this] implicit val ec = executionContext
 

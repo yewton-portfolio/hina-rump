@@ -24,7 +24,8 @@ object Main extends App {
     new AkkaModule(),
     new MyModule(),
     new DirtyEventModule(),
-    new TopicCreatorModule()
+    new TopicCreatorModule(),
+    new KafkaModule()
   )
 
   val system = injector.instance[ActorSystem]
@@ -38,7 +39,7 @@ class MyRouteBuilder() extends RouteBuilder {
   case class ErrorResponse(@BeanProperty message: String, @BeanProperty detail: String)
 
   override def configure(): Unit = {
-    configureRoutes(getContext)..onException(classOf[Exception])
+    configureRoutes(getContext).onException(classOf[Exception])
       .handled(true)
       .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()))
       //.setHeader(Exchange.CONTENT_TYPE, Builder.constant("application/json"))
