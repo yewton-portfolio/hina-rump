@@ -1,4 +1,5 @@
 import akka.actor._
+import akka.routing.Pool
 import com.google.inject.Injector
 
 /**
@@ -14,7 +15,6 @@ class GuiceAkkaExtensionImpl extends Extension {
   }
 
   def props(actorName: String) = Props(classOf[GuiceActorProducer], injector, actorName)
-
 }
 
 object GuiceAkkaExtension extends ExtensionId[GuiceAkkaExtensionImpl] with ExtensionIdProvider {
@@ -27,7 +27,6 @@ object GuiceAkkaExtension extends ExtensionId[GuiceAkkaExtensionImpl] with Exten
 
   /** Java API: Retrieve the extension for the given system. */
   override def get(system: ActorSystem): GuiceAkkaExtensionImpl = super.get(system)
-
 }
 
 /**
@@ -43,4 +42,5 @@ trait NamedActor {
 trait GuiceAkkaActorRefProvider {
   def propsFor(system: ActorSystem, name: String) = GuiceAkkaExtension(system).props(name)
   def provideActorRef(system: ActorSystem, name: String): ActorRef = system.actorOf(propsFor(system, name))
+  def providePoolRef(system: ActorSystem, name: String, pool: Pool) = system.actorOf(pool.props(propsFor(system, name)))
 }

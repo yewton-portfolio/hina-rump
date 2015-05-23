@@ -37,7 +37,7 @@ object TopicCreator extends NamedActor {
 }
 
 class TopicCreator @Inject() (zkClient: ZkClient, @Named("ZkIO") ec: ExecutionContext) extends Consumer {
-  override val endpointUri = "direct:create-topic"
+  override val endpointUri = "seda:create-topic"
   implicit private[this] val executionContext = ec
 
   override def receive = {

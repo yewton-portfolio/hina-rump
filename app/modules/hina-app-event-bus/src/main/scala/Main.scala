@@ -1,6 +1,7 @@
 import akka.actor.Status.Failure
 import akka.actor.{Actor, ActorRef, ActorSystem}
 import akka.camel._
+import akka.routing.RoundRobinPool
 import com.google.inject._
 import com.google.inject.name.{Named, Names}
 import com.typesafe.config.Config
@@ -31,8 +32,10 @@ object Main extends App {
   val system = injector.instance[ActorSystem]
   val camel = CamelExtension(system)
   camel.context.addRoutes(new MyRouteBuilder)
-  val consumer = system.actorOf(GuiceAkkaExtension(system).props(DirtyEventConsumer.name))
-  val topicCreator = system.actorOf(GuiceAkkaExtension(system).props(TopicCreator.name))
+  //system.actorOf(RoundRobinPool(10).props(GuiceAkkaExtension(system).props(DirtyEventProcessor.name)))
+  val as: RoundRobinPool = RoundRobinPool(10)
+  system.actorOf(GuiceAkkaExtension(system).props(DirtyEventConsumer.name))
+  system.actorOf(GuiceAkkaExtension(system).props(TopicCreator.name))
 }
 
 class MyRouteBuilder() extends RouteBuilder {
@@ -59,11 +62,11 @@ class MyRouteBuilder() extends RouteBuilder {
       .post("/{name}/events")
       .consumes("application/json")
       .produces("application/json")
-      .to("direct:dirty-event")
+      .to("seda:dirty-event")
 
       .put("/{topic}")
       .produces("application/json")
-      .to("direct:create-topic")
+      .to("seda:create-topic")
   }
 }
 
@@ -116,7 +119,7 @@ class DirtyEventConsumer @Inject() (@Named(DirtyEventProcessor.name) processor: 
 
   override def replyTimeout = 500 millis
 
-  override def endpointUri = "direct:dirty-event"
+  override def endpointUri = "seda:dirty-event"
 
   override def receive = {
     case msg: CamelMessage =>
