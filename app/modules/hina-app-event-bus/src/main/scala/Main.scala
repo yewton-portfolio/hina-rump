@@ -10,7 +10,7 @@ import net.codingwell.scalaguice.InjectorExtensions._
 import net.codingwell.scalaguice.ScalaModule
 import org.I0Itec.zkclient.ZkClient
 import org.apache.camel.Exchange
-import org.apache.camel.builder.{Builder, RouteBuilder}
+import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.model.rest.RestBindingMode
 
 import scala.beans.BeanProperty
@@ -19,7 +19,6 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 object Main extends App {
-
   val injector = Guice.createInjector(
     new ConfigModule(),
     new AkkaModule(),
@@ -36,7 +35,16 @@ object Main extends App {
 }
 
 class MyRouteBuilder() extends RouteBuilder {
+  case class ErrorResponse(@BeanProperty message: String, @BeanProperty detail: String)
+
   override def configure(): Unit = {
+    configureRoutes(getContext)..onException(classOf[Exception])
+      .handled(true)
+      .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()))
+      //.setHeader(Exchange.CONTENT_TYPE, Builder.constant("application/json"))
+      .setBody().constant(ErrorResponse("Internal Server Error", exceptionMessage().toString))
+      .end()
+
     restConfiguration()
       .component("netty4-http")
       .host("localhost")
@@ -74,6 +82,10 @@ class MyModule extends AbstractModule with ScalaModule {
   @Provides
   @Named("ZkIO")
   def provideZkIOExecutionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
+
+  @Provides
+  @Named("KafkaIO")
+  def provideKafkaIOExecutionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 }
 
 object AkkaModule {
@@ -104,15 +116,6 @@ class DirtyEventConsumer @Inject() (@Named(DirtyEventProcessor.name) processor: 
   override def replyTimeout = 500 millis
 
   override def endpointUri = "direct:dirty-event"
-
-  case class ErrorResponse(@BeanProperty message: String, @BeanProperty detail: String)
-
-  override def onRouteDefinition = (rd) => rd.onException(classOf[Exception])
-    .handled(true)
-    .setHeader(Exchange.HTTP_RESPONSE_CODE, Builder.constant(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()))
-    .setHeader(Exchange.CONTENT_TYPE, Builder.constant("application/json"))
-    .setBody().constant(ErrorResponse("Internal Server Error", Builder.exceptionMessage().toString))
-    .end()
 
   override def receive = {
     case msg: CamelMessage =>

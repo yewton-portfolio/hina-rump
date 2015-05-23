@@ -16,7 +16,7 @@ import org.apache.camel.Exchange
 import org.apache.kafka.clients.producer.{Callback, KafkaProducer, ProducerRecord, RecordMetadata}
 
 import scala.beans.BeanProperty
-import scala.concurrent.Promise
+import scala.concurrent.{ExecutionContext, Promise}
 import scala.util.Try
 
 case class DirtyEventRequest(name: String, publisherId: String, body: String, exchangeId: String)
@@ -53,13 +53,17 @@ object DirtyEventProcessor extends NamedActor {
   lazy val schema: Schema = new Schema.Parser().parse(schemaString)
 }
 
-class DirtyEventProcessor @Inject() (val config: Config, val repository: PublisherTopicRepository) extends Actor {
+class DirtyEventProcessor @Inject() (val config: Config,
+                                     val repository: PublisherTopicRepository,
+                                     @Named("KafkaIO") val executionContext: ExecutionContext) extends Actor {
   private[this] val producerConfigs: util.Map[String, Object] = config.getConfig("kafka.producer").root().unwrapped()
   producerConfigs.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
   producerConfigs.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer")
 
   // @todo inject
   private[this] val producer: KafkaProducer[String, Array[Byte]] = new KafkaProducer(producerConfigs)
+
+  private[this] implicit val ec = executionContext
 
   def receive = {
     case DirtyEventRequest(name, publisherId, body, exchangeId) =>
@@ -78,7 +82,6 @@ class DirtyEventProcessor @Inject() (val config: Config, val repository: Publish
       dataWriter.close()
 
       val record: ProducerRecord[String, Array[Byte]] = new ProducerRecord(name, baos.toByteArray)
-      import context.dispatcher // @todo ExecutionContext を Inject
       val promise = Promise[CamelMessage]()
       producer.send(record, new Callback {
         override def onCompletion(data: RecordMetadata, e: Exception): Unit = {
