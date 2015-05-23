@@ -118,7 +118,7 @@ object Common {
         val dirName = "scripts"
         val scriptDirectory = (baseDirectory in LocalRootProject).value / dirName
         scriptDirectory.listFiles.toSeq.map { file: File =>
-          file -> (s"${dirName}/${file.getName}")
+          file -> s"$dirName/${file.getName}"
         }
       },
       sources in(Compile, doc) := Seq.empty,

@@ -12,3 +12,5 @@ addSbtPlugin("com.scalapenos" % "sbt-prompt" % "0.2.1")
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "0.8.0")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.3.0")
+
+addSbtPlugin("com.gilt" % "sbt-dependency-graph-sugar" % "0.7.5")

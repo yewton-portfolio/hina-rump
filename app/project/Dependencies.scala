@@ -38,7 +38,6 @@ object Dependencies {
   val akkaVersion = "2.3.4"
   val akkaDeps = Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaVersion,
-    "com.typesafe.akka" %% "akka-contrib" % akkaVersion,
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "it")
 
@@ -57,7 +56,7 @@ object Dependencies {
     "org.apache.camel" % "camel-core" % camelVersion,
     "org.apache.camel" % "camel-scala" % camelVersion,
     "org.apache.camel" % "camel-guice" % camelVersion,
-    "org.apache.camel" % "camel-test" % camelVersion)
+    "org.apache.camel" % "camel-test" % camelVersion % "test")
 
   val camelJettyDeps = Seq(
     "org.apache.camel" % "camel-jetty" % camelVersion)
@@ -69,12 +68,12 @@ object Dependencies {
   val camelBeanstalkDeps = Seq(
     "org.apache.camel" % "camel-beanstalk" % camelVersion)
 
-  val camelKafkaDeps = Seq(
-    "org.apache.camel" % "camel-kafka" % camelVersion)
-
   val akkaCamelDeps = Seq(
     "com.typesafe.akka" %% "akka-camel" % akkaVersion)
 
   val guiceDeps = Seq(
     "net.codingwell" %% "scala-guice" % "4.0.0-beta5")
+
+  val kafkaDeps = Seq(
+    "org.apache.kafka" % "kafka-clients" % "0.8.2.1")
 }
