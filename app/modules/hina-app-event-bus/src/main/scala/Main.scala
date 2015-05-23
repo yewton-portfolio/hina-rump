@@ -1,17 +1,20 @@
 import akka.actor.Status.Failure
-import akka.actor.{ Actor, ActorRef, ActorSystem }
+import akka.actor.{Actor, ActorRef, ActorSystem}
 import akka.camel._
 import com.google.inject._
-import com.google.inject.name.{ Named, Names }
+import com.google.inject.name.{Named, Names}
 import com.typesafe.config.Config
 import io.netty.handler.codec.http.HttpResponseStatus
+import kafka.utils.ZKStringSerializer
 import net.codingwell.scalaguice.InjectorExtensions._
 import net.codingwell.scalaguice.ScalaModule
+import org.I0Itec.zkclient.ZkClient
 import org.apache.camel.Exchange
-import org.apache.camel.builder.{ Builder, RouteBuilder }
+import org.apache.camel.builder.{Builder, RouteBuilder}
 import org.apache.camel.model.rest.RestBindingMode
 
 import scala.beans.BeanProperty
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
@@ -21,13 +24,15 @@ object Main extends App {
     new ConfigModule(),
     new AkkaModule(),
     new MyModule(),
-    new DirtyTopicModule()
+    new DirtyEventModule(),
+    new TopicCreatorModule()
   )
 
   val system = injector.instance[ActorSystem]
   val camel = CamelExtension(system)
   camel.context.addRoutes(new MyRouteBuilder)
-  val consumer = system.actorOf(GuiceAkkaExtension(system).props(DirtyTopicConsumer.name))
+  val consumer = system.actorOf(GuiceAkkaExtension(system).props(DirtyEventConsumer.name))
+  val topicCreator = system.actorOf(GuiceAkkaExtension(system).props(TopicCreator.name))
 }
 
 class MyRouteBuilder() extends RouteBuilder {
@@ -41,20 +46,34 @@ class MyRouteBuilder() extends RouteBuilder {
       .bindingMode(RestBindingMode.json)
 
     rest("/v1/topics/")
+
+      .post("/{name}/events")
       .consumes("application/json")
       .produces("application/json")
+      .to("direct:dirty-event")
 
-      .post("/{name}/events").to("direct:dirty-topic")
-
-    constant("")
+      .put("/{topic}")
+      .produces("application/json")
+      .to("direct:create-topic")
   }
 }
 
 class MyModule extends AbstractModule with ScalaModule {
   override def configure() = {
-    bind[Actor].annotatedWith(Names.named(DirtyTopicConsumer.name)).to[DirtyTopicConsumer]
+    bind[Actor].annotatedWith(Names.named(DirtyEventConsumer.name)).to[DirtyEventConsumer]
     bind[PublisherTopicRepository].to[PublisherTopicRepositoryOnMemory]
   }
+
+  @Provides
+  @Inject
+  def provideZkClient(config: Config): ZkClient = {
+    val zkConnect = config.getString("zookeeper.connect")
+    new ZkClient(zkConnect, 30000, 30000, ZKStringSerializer)
+  }
+
+  @Provides
+  @Named("ZkIO")
+  def provideZkIOExecutionContext: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 }
 
 object AkkaModule {
@@ -76,15 +95,15 @@ class AkkaModule extends AbstractModule with ScalaModule {
   }
 }
 
-object DirtyTopicConsumer extends NamedActor {
-  override final val name = "DirtyTopicConsumer"
+object DirtyEventConsumer extends NamedActor {
+  override final val name = "DirtyEventConsumer"
 }
 
-class DirtyTopicConsumer @Inject() (@Named(DirtyTopicProcessor.name) processor: ActorRef) extends Consumer {
+class DirtyEventConsumer @Inject() (@Named(DirtyEventProcessor.name) processor: ActorRef) extends Consumer {
 
   override def replyTimeout = 500 millis
 
-  override def endpointUri = "direct:dirty-topic"
+  override def endpointUri = "direct:dirty-event"
 
   case class ErrorResponse(@BeanProperty message: String, @BeanProperty detail: String)
 
@@ -100,12 +119,13 @@ class DirtyTopicConsumer @Inject() (@Named(DirtyTopicProcessor.name) processor: 
       val t = for {
         name <- msg.headerAs[String]("name")
         publisherId <- msg.headerAs[String]("X-HINA-PUBLISHER-NAME")
+        exchangeId <- msg.headerAs[String](CamelMessage.MessageExchangeId)
       } yield {
-        DirtyTopicRequest(name, publisherId, msg.bodyAs[String])
+        DirtyEventRequest(name, publisherId, msg.bodyAs[String], exchangeId)
       }
       t match {
         case scala.util.Success(req) => processor forward req
-        case scala.util.Failure(e)   => processor forward DirtyTopicBadRequest(e)
+        case scala.util.Failure(e)   => processor forward DirtyEventBadRequest(e)
       }
   }
 

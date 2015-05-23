@@ -16,11 +16,13 @@ object Common {
    * sbt run した時に読み込まれるログ設定ファイル
    */
   val runLogbackConfigFile = file("conf/logback-development.xml")
+  val runLog4jConfigFile = file("conf/log4j-development.xml")
 
   /**
    * テスト用の何もしないロガー設定ファイル
    */
-  val testLogbackConfigFile = file("conf/test-logback.xml")
+  val testLogbackConfigFile = file("conf/logback-test.xml")
+  val testLog4jConfigFile = file("conf/log4j-test.xml")
 
   /**
    * 単体テスト用の設定ファイル
@@ -56,7 +58,8 @@ object Common {
       a => Seq("-Xmx", "-Xms", "-XX").exists(a.startsWith)),
     javaOptions in run ++= Seq(
       "-Dconfig.file=" + runConfigFile.getAbsolutePath,
-      "-Dlogback.configurationFile=" + runLogbackConfigFile.getAbsolutePath))
+      "-Dlogback.configurationFile=" + runLogbackConfigFile.getAbsolutePath,
+      "-Dlog4j.configuration=" + runLog4jConfigFile.getAbsoluteFile.toURI.toString))
 
   /**
    * テスト共通設定
@@ -65,7 +68,8 @@ object Common {
     baseDirectory := file("./"),
     javaOptions ++= Seq(
       "-Dlogger.file=" + testLogbackConfigFile.getAbsolutePath,
-      "-Dlogback.configurationFile=" + testLogbackConfigFile.getAbsolutePath))
+      "-Dlogback.configurationFile=" + testLogbackConfigFile.getAbsolutePath,
+      "-Dlog4j.configuration=" + testLog4jConfigFile.getAbsoluteFile.toURI.toString))
 
   /**
    * 単体テスト用の設定

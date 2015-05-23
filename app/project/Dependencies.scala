@@ -1,5 +1,5 @@
-import sbt._
 import play.core.PlayVersion
+import sbt._
 
 object Dependencies {
   val commonDeps: Seq[ModuleID] = Seq(
@@ -48,8 +48,10 @@ object Dependencies {
     "com.typesafe.play" %% "play" % PlayVersion.current,
     "com.typesafe.play" %% "play-test" % PlayVersion.current)
 
+  val jacksonVersion = "2.5.2"
   val jacksonDeps = Seq(
-    "com.fasterxml.jackson.core" % "jackson-databind" % "2.5.3")
+    "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion)
 
   val camelVersion = "2.15.1"
   val camelDeps = Seq(
@@ -74,6 +76,12 @@ object Dependencies {
   val guiceDeps = Seq(
     "net.codingwell" %% "scala-guice" % "4.0.0-beta5")
 
+  val kafkaVersion = "0.8.2.1"
   val kafkaDeps = Seq(
-    "org.apache.kafka" % "kafka-clients" % "0.8.2.1")
+    "org.apache.kafka" % "kafka-clients" % kafkaVersion,
+    "org.apache.kafka" %% "kafka" % kafkaVersion
+      exclude("junit", "junit"))
+
+  val avroDeps = Seq(
+    "org.apache.avro" % "avro" % "1.7.7")
 }
