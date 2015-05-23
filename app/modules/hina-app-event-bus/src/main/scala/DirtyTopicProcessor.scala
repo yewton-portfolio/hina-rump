@@ -10,10 +10,11 @@ import com.typesafe.config.Config
 import io.netty.handler.codec.http.HttpResponseStatus
 import net.codingwell.scalaguice.ScalaModule
 import org.apache.camel.Exchange
-import org.apache.kafka.clients.producer.{ RecordMetadata, ProducerRecord, KafkaProducer }
+import org.apache.kafka.clients.producer.{ Callback, RecordMetadata, ProducerRecord, KafkaProducer }
 
 import scala.beans.BeanProperty
-import scala.concurrent.Future
+import scala.concurrent.{ Promise, Future }
+import scala.util.Try
 
 case class DirtyTopicRequest(name: String, publisherId: String, body: String)
 case class DirtyTopicBadRequest(e: Throwable)
@@ -47,14 +48,20 @@ class DirtyTopicProcessor @Inject() (val config: Config, val repository: Publish
       // send body to somewhere
       val record: ProducerRecord[String, String] = new ProducerRecord("test-topic", org.joda.time.DateTime.now().getMillis.toString)
       import context.dispatcher
-      val f: Future[CamelMessage] = Future(producer.send(record).get()).map { (data: RecordMetadata) =>
-        val body = "Topic=%s, Partition=%d, Offset = %d".format(data.topic(), data.partition(), data.offset())
-        val response = DirtyTopicResponse(name, body)
-        CamelMessage(response, Map(
-          Exchange.HTTP_RESPONSE_CODE -> HttpResponseStatus.ACCEPTED.code()
-        ))
-      }
-      f pipeTo sender()
+      val promise = Promise[CamelMessage]()
+      producer.send(record, new Callback {
+        override def onCompletion(data: RecordMetadata, e: Exception): Unit = {
+          val result: Try[CamelMessage] = Option(e).map(scala.util.Failure(_)).getOrElse {
+            val body = "Topic=%s, Partition=%d, Offset = %d".format(data.topic(), data.partition(), data.offset())
+            val response = DirtyTopicResponse(name, body)
+            val message = CamelMessage(response, Map(
+              Exchange.HTTP_RESPONSE_CODE -> HttpResponseStatus.ACCEPTED.code()))
+            scala.util.Success(message)
+          }
+          promise.complete(result)
+        }
+      })
+      promise.future pipeTo sender()
     case DirtyTopicBadRequest(e) =>
       val response = DirtyTopicErrorResponse("error", e.getMessage)
       sender() ! CamelMessage(response, Map(
