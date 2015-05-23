@@ -117,7 +117,7 @@ object DirtyEventConsumer extends NamedActor {
 
 class DirtyEventConsumer @Inject() (@Named(DirtyEventProcessor.name) processor: ActorRef) extends Consumer {
 
-  override def replyTimeout = 500 millis
+  override def replyTimeout = 5000 millis
 
   override def endpointUri = "seda:dirty-event"
 

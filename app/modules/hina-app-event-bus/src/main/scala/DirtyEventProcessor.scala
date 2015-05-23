@@ -15,10 +15,10 @@ import org.apache.avro.file.DataFileWriter
 import org.apache.avro.generic.{GenericData, GenericDatumWriter, GenericRecord}
 import org.apache.camel.Exchange
 import org.apache.kafka.clients.producer._
+import org.apache.kafka.common.errors.TimeoutException
 
 import scala.beans.BeanProperty
 import scala.concurrent.{ExecutionContext, Promise}
-import scala.util.Try
 
 case class DirtyEventRequest(name: String, publisherId: String, body: String, exchangeId: String)
 case class DirtyEventBadRequest(e: Throwable)
@@ -91,13 +91,21 @@ class DirtyEventProcessor @Inject() (val config: Config,
       val promise = Promise[CamelMessage]()
       producer.send(record, new Callback {
         override def onCompletion(data: RecordMetadata, e: Exception): Unit = {
-          val result: Try[CamelMessage] = Option(e).map(scala.util.Failure(_)).getOrElse {
-            val response = DirtyEventResponse(name, exchangeId + ":" + context.self.path.toString)
-            val message = CamelMessage(response, Map(
+          val result: CamelMessage = Option(e).map {
+            case e: TimeoutException =>
+              val response = DirtyEventErrorResponse("timeout-error", e.getMessage)
+              CamelMessage(response, Map(
+                Exchange.HTTP_RESPONSE_CODE -> HttpResponseStatus.REQUEST_TIMEOUT.code()))
+            case _ =>
+              val response = DirtyEventErrorResponse("error", e.getMessage)
+              CamelMessage(response, Map(
+                Exchange.HTTP_RESPONSE_CODE -> HttpResponseStatus.INTERNAL_SERVER_ERROR.code()))
+          }.getOrElse {
+            val response = DirtyEventResponse(name, exchangeId)
+            CamelMessage(response, Map(
               Exchange.HTTP_RESPONSE_CODE -> HttpResponseStatus.ACCEPTED.code()))
-            scala.util.Success(message)
           }
-          promise.complete(result)
+          promise.success(result)
         }
       })
       promise.future pipeTo sender()
