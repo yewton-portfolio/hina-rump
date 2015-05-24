@@ -49,7 +49,9 @@ class TopicCreator @Inject() (zkClient: ZkClient, @Named("ZkIO") ec: ExecutionCo
         replicas <- fromTry(msg.headerAs[Int]("replicas"))
       } yield {
         blocking {
-          AdminUtils.createTopic(zkClient, topic, partitions, replicas)
+          Seq("dirty", "clean", "invalid").foreach { suffix =>
+            AdminUtils.createTopic(zkClient, s"$topic.$suffix", partitions, replicas)
+          }
         }
         TopicCreateResponse(topic, partitions, replicas)
       }
