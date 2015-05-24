@@ -36,6 +36,12 @@ object Main extends App {
   val as: RoundRobinPool = RoundRobinPool(10)
   system.actorOf(GuiceAkkaExtension(system).props(DirtyEventConsumer.name))
   system.actorOf(GuiceAkkaExtension(system).props(TopicCreator.name))
+  system.actorOf(GuiceAkkaExtension(system).props(StarvingConsumer.name))
+
+  sys.addShutdownHook {
+    system.shutdown()
+    system.awaitTermination(10.seconds)
+  }
 }
 
 class MyRouteBuilder() extends RouteBuilder {
@@ -73,7 +79,9 @@ class MyRouteBuilder() extends RouteBuilder {
 class MyModule extends AbstractModule with ScalaModule {
   override def configure() = {
     bind[Actor].annotatedWith(Names.named(DirtyEventConsumer.name)).to[DirtyEventConsumer]
+    bind[Actor].annotatedWith(Names.named(StarvingConsumer.name)).to[StarvingConsumer]
     bind[PublisherTopicRepository].to[PublisherTopicRepositoryOnMemory]
+    bind[TopicConsumerRepository].to[TopicConsumerRepositoryOnMemory]
   }
 
   @Provides

@@ -73,6 +73,9 @@ object Dependencies {
   val akkaCamelDeps = Seq(
     "com.typesafe.akka" %% "akka-camel" % akkaVersion)
 
+  val akkaStreamingDeps = Seq(
+    "com.typesafe.akka" %% "akka-stream-experimental" % "1.0-M5")
+
   val guiceDeps = Seq(
     "net.codingwell" %% "scala-guice" % "4.0.0-beta5")
 
