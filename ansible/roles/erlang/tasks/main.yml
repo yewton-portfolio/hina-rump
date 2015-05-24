@@ -1,0 +1,63 @@
+---
+- name: check if Erlang is installed
+  stat: path={{ erlang_physical_prefix }}/bin/erl get_md5=no
+  register: erl
+
+# cf. http://www.erlang.org/doc/installation_guide/INSTALL.html
+- name: download the Erlang source archive file
+  get_url: >-
+    url={{ erlang_src_archive_url }}
+    dest={{ erlang_src_archive_path }}
+    mode=0644
+    timeout=10
+    sha256sum={{ erlang_src_archive_sha256 }}
+  when: not erl.stat.exists
+
+- name: extract the Erlang source archive file
+  command: tar -zxf {{ erlang_src_archive_name }}
+  args:
+    chdir: "{{ build_src_directory }}"
+    creates: "{{ erlang_src_path }}"
+  when: not erl.stat.exists
+
+- name: be sure required packages are installed
+  yum: name={{ item }}
+  with_items: "{{ erlang_required_packages }}"
+  become: yes
+
+- name: build Erlang
+  command: "{{ item }}"
+  args:
+    chdir: "{{ erlang_src_path }}"
+  with_items:
+    - ./configure --prefix={{ erlang_physical_prefix }} {{ erlang_configure_options }}
+    - make
+  environment:
+    LC_ALL: C
+  when: not erl.stat.exists
+
+- name: install Erlang
+  command: make install
+  args:
+    chdir: "{{ erlang_src_path }}"
+    creates: "{{ erlang_physical_prefix }}/bin/erl"
+  environment:
+    LC_ALL: C
+  become: yes
+  when: not erl.stat.exists
+
+- name: create canonical link
+  file: >-
+    state=link
+    dest={{ erlang_prefix }}
+    src={{ erlang_physical_prefix }}
+    owner=root
+    group=root
+  become: yes
+
+- name: be sure Erlang in PATH
+  template: >-
+    src=erlang.sh.j2
+    dest=/etc/profile.d/erlang.sh
+    mode=0644
+  become: yes

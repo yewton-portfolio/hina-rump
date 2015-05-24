@@ -1,0 +1,106 @@
+---
+- name: be sure rabbitmq user group is created
+  group: name={{ rabbitmq_user_group }} gid={{ rabbitmq_user_gid }}
+  become: yes
+
+- name: be sure rabbitmq user is created
+  user: >-
+     name={{ rabbitmq_user_username }}
+     uid={{ rabbitmq_user_uid }}
+     group={{ rabbitmq_user_group }}
+     home={{ rabbitmq_home }}
+  become: yes
+
+- name: check if RabbitMQ is installed
+  stat: path={{ rabbitmq_physical_prefix }}/sbin/rabbitmq-server get_md5=no
+  register: rabbitmq_server
+
+- name: download the RabbitMQ binary archive file
+  get_url: >-
+    url={{ rabbitmq_bin_archive_url }}
+    dest={{ rabbitmq_bin_archive_path }}
+    mode=0644
+    timeout=10
+    sha256sum={{ rabbitmq_bin_archive_sha256 }}
+  when: not rabbitmq_server.stat.exists
+
+- name: extract the RabbitMQ binary archive file
+  command: tar zxf {{ rabbitmq_bin_archive_name }}
+  args:
+    chdir: "{{ build_src_directory }}"
+    creates: "{{ rabbitmq_bin_path }}"
+  when: not rabbitmq_server.stat.exists
+
+- name: install RabbitMQ
+  command: cp -rp {{ rabbitmq_bin_path }} {{ rabbitmq_physical_prefix }}
+  args:
+    creates: "{{ rabbitmq_physical_prefix }}"
+  become: yes
+
+- name: create canonical link
+  file: >-
+    state=link
+    dest={{ rabbitmq_prefix }}
+    src={{ rabbitmq_physical_prefix }}
+  become: yes
+
+- name: be sure rabbitmq-env.conf is available
+  template: >-
+    src=rabbitmq-env.conf.j2
+    dest={{ rabbitmq_physical_prefix }}/etc/rabbitmq/rabbitmq-env.conf
+    mode=0644
+  become: yes
+
+- name: be sure required directories are exist
+  command: "mkdir -p {{ item }}"
+  args:
+    creates: "{{ item }}"
+  with_items: &required_dirs
+    - "{{ rabbitmq_logdir }}"
+    - "{{ rabbitmq_mnesiadir }}"
+    - "{{ rabbitmq_config_root }}"
+  become: yes
+
+- name: be sure required directories have proper permissions
+  file: >-
+    path={{ item }}
+    state=directory
+    owner={{ rabbitmq_user_username }}
+    group={{ rabbitmq_user_group }}
+    mode=0755
+  with_items: *required_dirs
+  become: yes
+
+- name: register RabbitMQ service
+  template: >-
+    src=rabbitmq-server.j2
+    dest=/etc/init.d/rabbitmq-server
+    mode=0755
+  become: yes
+
+- name: put rabbitmq.config
+  template: >-
+    src=rabbitmq.config.j2
+    dest={{ rabbitmq_config_root}}/rabbitmq.config
+    owner={{ rabbitmq_user_username }}
+    group={{ rabbitmq_user_group }}
+    mode=0644
+  notify:
+    - restart RabbitMQ
+  become: yes
+
+- name: put erlang_cookie
+  template: >-
+    src=erlang_cookie.j2
+    dest={{ rabbitmq_erlang_cookie_path }}
+    owner={{ rabbitmq_user_username }}
+    group={{ rabbitmq_user_group }}
+    mode=0400
+  become: yes
+
+- name: ensure RabbitMQ is running
+  service: >-
+    name={{ rabbitmq_service_name }}
+    state=started
+    enabled=yes
+  become: yes

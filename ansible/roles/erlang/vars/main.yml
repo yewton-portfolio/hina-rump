@@ -1,0 +1,7 @@
+---
+erlang_src_name: otp_src_{{ erlang_version }}
+erlang_src_path: "{{ build_src_directory }}/{{ erlang_src_name }}"
+erlang_src_archive_name: otp_src_{{ erlang_version }}.tar.gz
+erlang_src_archive_path: "{{ build_src_directory }}/otp_src_{{ erlang_version }}.tar.gz"
+erlang_src_archive_url: "{{ erlang_src_archive_base_url }}/{{ erlang_src_archive_name }}"
+erlang_physical_prefix: "{{ erlang_prefix }}_{{ erlang_version }}"

@@ -1,0 +1,23 @@
+---
+- name: enable plugins
+  rabbitmq_plugin: >-
+     names={{ item }}
+     new_only=yes
+     state=enabled
+  with_items: "{{ rabbitmq_enabled_plugins }}"
+  notify:
+    - restart RabbitMQ
+  environment: rabbitmqctl_env
+  become: yes
+  become_user: "{{ rabbitmq_user_username }}"
+
+- name: disable plugins
+  rabbitmq_plugin: >-
+     names={{ item }}
+     state=disabled
+  with_items: "{{ rabbitmq_disabled_plugins }}"
+  notify:
+    - restart RabbitMQ
+  environment: rabbitmqctl_env
+  become: yes
+  become_user: "{{ rabbitmq_user_username }}"

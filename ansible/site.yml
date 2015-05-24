@@ -1,3 +1,4 @@
 ---
 - include: kafka.yml
 - include: kafka-manager.yml
+- include: rabbitmq.yml

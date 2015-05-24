@@ -90,7 +90,8 @@ Vagrant.configure('2') do |config|
             'zookeeper' => nodes,
             'kafka' => nodes,
             'kafka-manager' => ['hina-local-kafka01'],
-            'vagrant:children' => ['zookeeper', 'kafka']
+            'rabbitmq' => ['hina-local-kafka02'],
+            'vagrant:children' => ['zookeeper', 'kafka', 'kafka-manager', 'rabbitmq']
           }
         end
       end

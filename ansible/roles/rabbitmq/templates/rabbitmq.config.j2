@@ -1,0 +1,37 @@
+% -*- mode: erlang; -*-
+
+[
+{% if rabbitmq_local_erl_networking %}
+  {kernel, [{inet_dist_use_interface,{127,0,0,1}}]},
+{% elif rabbitmq_erl_networking_bind_address %}
+  {kernel, [{inet_dist_use_interface,{ {{ rabbitmq_erl_networking_bind_address|replace('.', ',') }}}}]},
+{% endif %}
+  {rabbit, [
+{% if rabbitmq_cluster and rabbitmq_cluster_disk_nodes %}
+    {cluster_nodes, [{{ rabbitmq_cluster_disk_nodes|map('surround_by_quote')|join(',') }}]},
+{% endif %}
+{% if rabbitmq_ssl %}
+    {ssl_listeners, [{{ rabbitmq_ssl_port }}]},
+    {ssl_options, [{cacertfile,"{{ rabbitmq_ssl_cacert }}"},
+                    {certfile,"{{ rabbitmq_ssl_cert }}"},
+                    {keyfile,"{{ rabbitmq_ssl_key }}"},
+                    {verify,{{ rabbitmq_ssl_verify }}},
+                    {fail_if_no_peer_cert,{{ rabbitmq_ssl_fail_if_no_peer_cert }} }]},
+{% endif %}
+    {tcp_listen_options, [binary, {packet,{{ rabbitmq_tcp_listen_packet }}},
+                                  {reuseaddr,{{ rabbitmq_tcp_listen_reuseaddr }}},
+                                  {backlog,{{ rabbitmq_tcp_listen_backlog }}},
+                                  {nodelay,{{ rabbitmq_tcp_listen_nodelay }}},
+                                  {exit_on_close,{{ rabbitmq_tcp_listen_exit_on_close }}},
+                                  {keepalive,{{ rabbitmq_tcp_listen_keepalive }}}]},
+    {loopback_users, []},
+{% if rabbitmq_disk_free_limit_relative %}
+    {disk_free_limit, {mem_relative, {{ rabbitmq_disk_free_limit_relative }}}},
+{% endif %}
+{% if rabbitmq_vm_memory_high_watermark %}
+    {vm_memory_high_watermark, {{ rabbitmq_vm_memory_high_watermark }}},
+{% endif %}
+    {default_user, <<"{{ rabbitmq_default_user }}">>},
+    {default_pass, <<"{{ rabbitmq_default_pass }}">>}
+  ]}
+].

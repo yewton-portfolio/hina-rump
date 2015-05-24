@@ -1,0 +1,5 @@
+---
+- hosts: rabbitmq
+  roles:
+    - common
+    - rabbitmq

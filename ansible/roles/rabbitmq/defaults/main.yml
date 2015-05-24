@@ -1,0 +1,99 @@
+---
+rabbitmq_version: 3.5.2
+rabbitmq_prefix: /opt/rabbitmq_server
+
+rabbitmq_bin_archive_base_url: https://www.rabbitmq.com/releases/rabbitmq-server
+rabbitmq_bin_archive_sha256: 3cf03f3e55a8729d486aff10ae2a0711a7643b7de36db9f2363b5aaba0415d4d
+
+rabbitmq_user_username: rabbitmq
+rabbitmq_user_uid: 811
+rabbitmq_user_group: rabbitmq
+rabbitmq_user_gid: 811
+rabbitmq_home: /home/rabbitmq
+
+# being null, the rabbitmq defaults will be used
+rabbitmq_nodename: null
+rabbitmq_address: null
+rabbitmq_port: null
+rabbitmq_logdir: /var/log/rabbitmq
+rabbitmq_mnesiadir: /var/lib/rabbitmq/mnesia
+rabbitmq_service_name: rabbitmq-server
+
+# config file location
+# http://www.rabbitmq.com/configure.html#define-environment-variables
+# "The .config extension is automatically appended by the Erlang runtime."
+rabbitmq_config_root: /etc/rabbitmq
+rabbitmq_config: "{{rabbitmq_config_root}}/rabbitmq"
+rabbitmq_erlang_cookie_path: "{{ rabbitmq_home }}/.erlang.cookie"
+rabbitmq_enabled_plugins_file: "{{ rabbitmq_config_root }}/enabled_plugins"
+rabbitmq_pidfile: /var/run/rabbitmq/{{ rabbitmq_service_name }}.pid
+
+# rabbitmq.config defaults
+rabbitmq_default_user: admin
+rabbitmq_default_pass: admin
+
+# bind erlang networking to localhost
+rabbitmq_local_erl_networking: no
+
+# bind rabbit and erlang networking to an address
+rabbitmq_erl_networking_bind_address: null
+
+# clustering
+rabbitmq_cluster: no
+rabbitmq_cluster_disk_nodes: []
+rabbitmq_erlang_cookie: = 'AnyAlphaNumericStringWillDo'
+
+# resource usage
+rabbitmq_disk_free_limit_relative: null
+rabbitmq_vm_memory_high_watermark: null
+
+# ssl
+rabbitmq_ssl: no
+rabbitmq_ssl_port: 5671
+rabbitmq_ssl_cacert: '/path/to/cacert.pem'
+rabbitmq_ssl_cert: '/path/to/cert.pem'
+rabbitmq_ssl_key: '/path/to/key.pem'
+rabbitmq_ssl_verify: verify_none
+rabbitmq_ssl_fail_if_no_peer_cert: 'false'
+
+#tcp listen options
+rabbitmq_tcp_listen_packet: raw
+rabbitmq_tcp_listen_reuseaddr: 'true'
+rabbitmq_tcp_listen_backlog: 128
+rabbitmq_tcp_listen_nodelay: 'true'
+rabbitmq_tcp_listen_exit_on_close: 'false'
+rabbitmq_tcp_listen_keepalive: 'false'
+
+#virtualhosts
+rabbitmq_virtualhosts:
+  - /
+rabbitmq_disabled_virtualhosts: []
+
+#users
+rabbitmq_enabled_users:
+  - name: bunny
+    password: bunny
+    tags:
+      - bunny
+    vhost: null
+    configure_priv: '.*'
+    read_priv: '.*'
+    write_priv: '.*'
+rabbitmq_disabled_users:
+  - guest
+
+#plugins
+rabbitmq_enabled_plugins:
+  - rabbitmq_management
+  - rabbitmq_management_visualiser
+rabbitmq_disabled_plugins: []
+
+# Example HA policies
+rabbitmq_policies:
+  - name: ha-all
+    pattern: "^(?!amq\\.).*"
+    tags:
+      ha-mode: all
+    priority: 0
+
+rabbitmq_disabled_policies: []

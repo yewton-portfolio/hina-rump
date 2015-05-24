@@ -1,0 +1,20 @@
+---
+- name: enable virtualhosts
+  rabbitmq_vhost: >-
+     name={{ item }}
+     node={{ rabbitmq_nodename or "rabbit" }}
+     state=present
+  with_items: "{{ rabbitmq_virtualhosts }}"
+  environment: rabbitmqctl_env
+  become: yes
+  become_user: "{{ rabbitmq_user_username }}"
+
+- name: disable virtualhosts
+  rabbitmq_plugin: >-
+     name={{ item }}
+     node={{ rabbitmq_nodename or "rabbit" }}
+     state=absent
+  with_items: "{{ rabbitmq_disabled_virtualhosts }}"
+  environment: rabbitmqctl_env
+  become: yes
+  become_user: "{{ rabbitmq_user_username }}"

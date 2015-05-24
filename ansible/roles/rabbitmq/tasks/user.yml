@@ -1,0 +1,26 @@
+---
+- name: enable users
+  rabbitmq_user: >-
+     name={{ item.name }}
+     password={{ item.password }}
+     node={{ rabbitmq_nodename or "rabbit" }}
+     tags={{ ','.join(item.tags) }}
+     vhost={{ item.vhost or "/" }}
+     configure_priv={{ item.configure_priv }}
+     read_priv={{ item.read_priv }}
+     write_priv={{ item.write_priv }}
+     state=present
+  with_items: "{{ rabbitmq_enabled_users }}"
+  environment: rabbitmqctl_env
+  become: yes
+  become_user: "{{ rabbitmq_user_username }}"
+
+- name: disable users
+  rabbitmq_user: >-
+     name={{ item }}
+     node={{ rabbitmq_nodename or "rabbit" }}
+     state=absent
+  with_items: "{{ rabbitmq_disabled_users }}"
+  environment: rabbitmqctl_env
+  become: yes
+  become_user: "{{ rabbitmq_user_username }}"

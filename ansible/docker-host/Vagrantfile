@@ -22,5 +22,4 @@ Vagrant.configure('2') do |config|
 
   config.vm.provision 'shell', inline: 'mkdir -p /opt/squid/cache'
   config.vm.network 'private_network', ip: "192.168.53.111"
-  config.vm.network :forwarded_port, guest: 3128, host: 33128
 end

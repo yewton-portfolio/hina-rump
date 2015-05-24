@@ -1,0 +1,22 @@
+---
+- name: enable policies
+  rabbitmq_policy: >-
+    name={{ item.name }}
+    pattern={{ item.pattern }}
+    priority={{ item.priority }}
+    state=present
+  args:
+    tags: "{{ item.tags }}"
+  with_items: "{{ rabbitmq_policies }}"
+  environment: rabbitmqctl_env
+  become: yes
+  become_user: "{{ rabbitmq_user_username }}"
+
+- name: disable policies
+  rabbitmq_policy: >-
+    name={{ item }}
+    state=absent
+  with_items: "{{ rabbitmq_disabled_policies }}"
+  environment: rabbitmqctl_env
+  become: yes
+  become_user: "{{ rabbitmq_user_username }}"

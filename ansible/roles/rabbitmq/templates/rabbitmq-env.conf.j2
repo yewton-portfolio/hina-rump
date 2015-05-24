@@ -1,0 +1,20 @@
+#!/bin/sh
+{% if rabbitmq_local_erl_networking %}
+NODENAME={{ rabbitmq_user_username }}@localhost
+NODE_IP_ADDRESS=127.0.0.1
+export ERL_EPMD_ADDRESS=127.0.0.1
+{% elif rabbitmq_erl_networking_bind_address %}
+NODENAME={{ rabbitmq_nodename }}
+NODE_IP_ADDRESS={{ rabbitmq_erl_networking_bind_address }}
+export ERL_EPMD_ADDRESS={{ rabbitmq_erl_networking_bind_address }}
+{% else %}
+{{ 'NODE_IP_ADDRESS=%s' % rabbitmq_address if rabbitmq_address else '' }}
+{{ 'NODENAME=%s' % rabbitmq_nodename if rabbitmq_nodename else '' }}
+{% endif %}
+
+{{ 'NODE_PORT=%s' % rabbitmq_port if rabbitmq_port else '' }}
+{{ 'CONFIG_FILE=%s' % rabbitmq_config if rabbitmq_config else '' }}
+{{ 'LOG_BASE=%s' % rabbitmq_logdir if rabbitmq_logdir else '' }}
+{{ 'MNESIA_BASE=%s' % rabbitmq_mnesiadir if rabbitmq_mnesiadir else '' }}
+{{ 'ENABLED_PLUGINS_FILE=%s' % rabbitmq_enabled_plugins_file if rabbitmq_enabled_plugins_file else '' }}
+{{ 'PID_FILE=%s' % rabbitmq_pidfile if rabbitmq_pidfile else '' }}

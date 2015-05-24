@@ -1,0 +1,9 @@
+---
+rabbitmq_bin_name: rabbitmq_server-{{ rabbitmq_version }}
+rabbitmq_bin_path: "{{ build_src_directory}}/{{ rabbitmq_bin_name }}"
+rabbitmq_bin_archive_name: "rabbitmq-server-generic-unix-{{ rabbitmq_version }}.tar.gz"
+rabbitmq_bin_archive_path: "{{ build_src_directory}}/{{ rabbitmq_bin_archive_name }}"
+rabbitmq_bin_archive_url: "{{ rabbitmq_bin_archive_base_url }}/v{{ rabbitmq_version }}/{{ rabbitmq_bin_archive_name}}"
+rabbitmq_physical_prefix: "{{ rabbitmq_prefix }}_{{ rabbitmq_version }}"
+rabbitmqctl_env:
+  PATH: "{{ erlang_physical_prefix }}/bin:{{ rabbitmq_physical_prefix }}/sbin/:{{ ansible_env.PATH }}"

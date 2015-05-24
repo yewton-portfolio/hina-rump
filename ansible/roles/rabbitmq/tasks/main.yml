@@ -1,0 +1,6 @@
+---
+- include: install.yml
+- include: policy.yml
+- include: plugin.yml
+- include: virtualhost.yml
+- include: user.yml

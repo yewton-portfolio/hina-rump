@@ -1,0 +1,10 @@
+---
+erlang_version: 17.5
+erlang_prefix: /opt/erlang
+erlang_configure_options: --without-javac --without-wx
+erlang_required_packages:
+  - ncurses-devel
+  - openssl-devel
+
+erlang_src_archive_base_url: http://download.basho.co.jp.cs-ap-e2.ycloud.jp/otp/download
+erlang_src_archive_sha256: 3c28820c981b30c50df8ac2a4a238e5813454fa3ed2ad530bc7948a282846474
