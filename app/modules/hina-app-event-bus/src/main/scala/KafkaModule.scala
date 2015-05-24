@@ -1,12 +1,12 @@
 import java.util
 import java.util.Properties
 
-import com.google.inject.{AbstractModule, Inject, Provides}
-import com.typesafe.config.{Config, ConfigValue}
-import kafka.consumer.{Consumer, ConsumerConfig, ConsumerConnector}
-import kafka.serializer.{Decoder, DefaultDecoder, StringDecoder}
+import com.google.inject.{ AbstractModule, Inject, Provides }
+import com.typesafe.config.{ Config, ConfigValue }
+import kafka.consumer.{ Consumer, ConsumerConfig, ConsumerConnector }
+import kafka.serializer.{ Decoder, DefaultDecoder, StringDecoder }
 import net.codingwell.scalaguice.ScalaModule
-import org.apache.kafka.clients.producer.{KafkaProducer, Producer}
+import org.apache.kafka.clients.producer.{ KafkaProducer, Producer }
 
 import scala.collection.JavaConverters._
 

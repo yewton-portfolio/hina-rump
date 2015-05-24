@@ -53,7 +53,7 @@ object Dependencies {
     "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion,
     "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion)
 
-  val camelVersion = "2.15.1"
+  val camelVersion = "2.15.2"
   val camelDeps = Seq(
     "org.apache.camel" % "camel-core" % camelVersion,
     "org.apache.camel" % "camel-scala" % camelVersion,
@@ -69,6 +69,9 @@ object Dependencies {
 
   val camelBeanstalkDeps = Seq(
     "org.apache.camel" % "camel-beanstalk" % camelVersion)
+
+  val camelRabbitMqDeps = Seq(
+    "org.apache.camel" % "camel-rabbitmq" % camelVersion)
 
   val akkaCamelDeps = Seq(
     "com.typesafe.akka" %% "akka-camel" % akkaVersion)

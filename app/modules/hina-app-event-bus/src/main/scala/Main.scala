@@ -1,9 +1,9 @@
 import akka.actor.Status.Failure
-import akka.actor.{Actor, ActorRef, ActorSystem}
+import akka.actor.{ Actor, ActorRef, ActorSystem }
 import akka.camel._
 import akka.routing.RoundRobinPool
 import com.google.inject._
-import com.google.inject.name.{Named, Names}
+import com.google.inject.name.{ Named, Names }
 import com.typesafe.config.Config
 import io.netty.handler.codec.http.HttpResponseStatus
 import kafka.utils.ZKStringSerializer
