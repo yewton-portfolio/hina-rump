@@ -41,6 +41,8 @@ trait NamedActor {
  */
 trait GuiceAkkaActorRefProvider {
   def propsFor(system: ActorSystem, name: String) = GuiceAkkaExtension(system).props(name)
-  def provideActorRef(system: ActorSystem, name: String): ActorRef = system.actorOf(propsFor(system, name))
-  def providePoolRef(system: ActorSystem, name: String, pool: Pool) = system.actorOf(pool.props(propsFor(system, name)))
+  def provideActorRef(system: ActorSystem, props: Props): ActorRef = system.actorOf(props)
+  def provideActorRef(system: ActorSystem, name: String): ActorRef = provideActorRef(system, propsFor(system, name))
+  def provideActorRef(system: ActorSystem, name: String, pool: Pool): ActorRef =
+    provideActorRef(system, pool.props(propsFor(system, name)))
 }

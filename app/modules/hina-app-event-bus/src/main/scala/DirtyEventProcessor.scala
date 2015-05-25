@@ -4,7 +4,7 @@ import java.util
 import akka.actor.{Actor, ActorRef, ActorSystem}
 import akka.camel.CamelMessage
 import akka.pattern.pipe
-import akka.routing.RoundRobinPool
+import akka.routing.{DefaultResizer, RoundRobinPool}
 import com.google.inject.name.{Named, Names}
 import com.google.inject.{AbstractModule, Inject, Provides}
 import com.typesafe.config.Config
@@ -32,8 +32,10 @@ class DirtyEventModule extends AbstractModule with ScalaModule with GuiceAkkaAct
 
   @Provides
   @Named(DirtyEventProcessor.name)
-  def provideDirtyEventProcessorRef(@Inject() system: ActorSystem): ActorRef =
-    providePoolRef(system, DirtyEventProcessor.name, RoundRobinPool(10))
+  def provideDirtyEventProcessorRef(@Inject() system: ActorSystem): ActorRef = {
+    val resizer = DefaultResizer(lowerBound = 2, upperBound = 10)
+    provideActorRef(system, DirtyEventProcessor.name, RoundRobinPool(10, Some(resizer)))
+  }
 }
 
 object DirtyEventProcessor extends NamedActor {
