@@ -1,9 +1,8 @@
 import akka.actor.Status.Failure
-import akka.actor.{ Actor, ActorRef, ActorSystem }
+import akka.actor.{Actor, ActorRef, ActorSystem}
 import akka.camel._
-import akka.routing.RoundRobinPool
 import com.google.inject._
-import com.google.inject.name.{ Named, Names }
+import com.google.inject.name.{Named, Names}
 import com.typesafe.config.Config
 import io.netty.handler.codec.http.HttpResponseStatus
 import kafka.utils.ZKStringSerializer
@@ -32,9 +31,7 @@ object Main extends App {
   val system = injector.instance[ActorSystem]
   val camel = CamelExtension(system)
   camel.context.addRoutes(new MyRouteBuilder)
-  //system.actorOf(RoundRobinPool(10).props(GuiceAkkaExtension(system).props(DirtyEventProcessor.name)))
-  val as: RoundRobinPool = RoundRobinPool(10)
-  system.actorOf(GuiceAkkaExtension(system).props(DirtyEventConsumer.name))
+  system.actorOf(GuiceAkkaExtension(system).props(DirtyEventForwarder.name))
   system.actorOf(GuiceAkkaExtension(system).props(TopicCreator.name))
   system.actorOf(GuiceAkkaExtension(system).props(StarvingConsumer.name))
 
@@ -78,7 +75,7 @@ class MyRouteBuilder() extends RouteBuilder {
 
 class MyModule extends AbstractModule with ScalaModule {
   override def configure() = {
-    bind[Actor].annotatedWith(Names.named(DirtyEventConsumer.name)).to[DirtyEventConsumer]
+    bind[Actor].annotatedWith(Names.named(DirtyEventForwarder.name)).to[DirtyEventForwarder]
     bind[Actor].annotatedWith(Names.named(StarvingConsumer.name)).to[StarvingConsumer]
     bind[PublisherTopicRepository].to[PublisherTopicRepositoryOnMemory]
     bind[TopicConsumerRepository].to[TopicConsumerRepositoryOnMemory]
@@ -119,15 +116,16 @@ class AkkaModule extends AbstractModule with ScalaModule {
   }
 }
 
-object DirtyEventConsumer extends NamedActor {
-  override final val name = "DirtyEventConsumer"
+object DirtyEventForwarder extends NamedActor {
+  override final val name = "DirtyEventForwarder"
+  final val endpointUri = "seda:dirty-event"
 }
 
-class DirtyEventConsumer @Inject() (@Named(DirtyEventProcessor.name) processor: ActorRef) extends Consumer {
+class DirtyEventForwarder @Inject() (@Named(DirtyEventProcessor.name) processor: ActorRef) extends Consumer {
 
   override def replyTimeout = 5000 millis
 
-  override def endpointUri = "seda:dirty-event"
+  override def endpointUri = DirtyEventForwarder.endpointUri
 
   override def receive = {
     case msg: CamelMessage =>
