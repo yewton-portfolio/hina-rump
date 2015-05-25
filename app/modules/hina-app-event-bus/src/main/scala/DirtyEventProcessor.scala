@@ -5,6 +5,7 @@ import akka.actor.{Actor, ActorRef, ActorSystem}
 import akka.camel.CamelMessage
 import akka.pattern.pipe
 import akka.routing.{DefaultResizer, RoundRobinPool}
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.inject.name.{Named, Names}
 import com.google.inject.{AbstractModule, Inject, Provides}
 import com.typesafe.config.Config
@@ -17,12 +18,13 @@ import org.apache.camel.Exchange
 import org.apache.kafka.clients.producer._
 import org.apache.kafka.common.errors.TimeoutException
 
+import scala.annotation.meta.field
 import scala.beans.BeanProperty
 import scala.concurrent.{ExecutionContext, Promise}
 
 case class DirtyEventRequest(name: String, publisherId: String, body: String, exchangeId: String)
 case class DirtyEventBadRequest(e: Throwable)
-case class DirtyEventResponse(@BeanProperty name: String, @BeanProperty exchangeId: String)
+case class DirtyEventResponse(@BeanProperty name: String, @(JsonProperty @field)("exchange_id") exchangeId: String)
 case class DirtyEventErrorResponse(@BeanProperty code: String, @BeanProperty detail: String)
 
 class DirtyEventModule extends AbstractModule with ScalaModule with GuiceAkkaActorRefProvider {
