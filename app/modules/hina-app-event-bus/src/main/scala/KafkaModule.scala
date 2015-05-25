@@ -35,7 +35,7 @@ class ZooKeeperConsumerFactory @Inject() (config: Config) extends KafkaConsumerF
 
 class KafkaModule extends AbstractModule with ScalaModule {
   override def configure(): Unit = {
-    bind[KafkaConsumerFactory].to[ZooKeeperConsumerFactory]
+    bind[KafkaConsumerFactory].to[ZooKeeperConsumerFactory].asEagerSingleton()
   }
 
   @Provides

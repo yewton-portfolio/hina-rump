@@ -4,7 +4,7 @@ import java.util
 import akka.actor.{Actor, ActorRef, ActorSystem}
 import akka.camel.CamelMessage
 import akka.pattern.pipe
-import akka.routing.{Pool, RoundRobinPool}
+import akka.routing.RoundRobinPool
 import com.google.inject.name.{Named, Names}
 import com.google.inject.{AbstractModule, Inject, Provides}
 import com.typesafe.config.Config
@@ -31,21 +31,13 @@ class DirtyEventModule extends AbstractModule with ScalaModule with GuiceAkkaAct
   }
 
   @Provides
-  @Named(DirtyEventProcessor.poolName)
-  @Inject
-  def provideDirtyEventPool(system: ActorSystem): Pool = RoundRobinPool(10)
-
-  @Provides
   @Named(DirtyEventProcessor.name)
-  @Inject
-  def provideDirtyEventProcessorRef(system: ActorSystem,
-                                    @Named(DirtyEventProcessor.poolName) pool: Pool): ActorRef =
-    providePoolRef(system, DirtyEventProcessor.name, pool)
+  def provideDirtyEventProcessorRef(@Inject() system: ActorSystem): ActorRef =
+    providePoolRef(system, DirtyEventProcessor.name, RoundRobinPool(10))
 }
 
 object DirtyEventProcessor extends NamedActor {
   override final val name = "DirtyEventProcessor"
-  final val poolName = "DirtyEventProcessorPool"
   private[this] val schemaString =
     """
       |{"namespace": "net.yewton.hina",
