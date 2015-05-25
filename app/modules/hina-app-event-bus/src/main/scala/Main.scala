@@ -48,7 +48,6 @@ class MyRouteBuilder() extends RouteBuilder {
     configureRoutes(getContext).onException(classOf[Exception])
       .handled(true)
       .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()))
-      //.setHeader(Exchange.CONTENT_TYPE, Builder.constant("application/json"))
       .setBody().constant(ErrorResponse("Internal Server Error", exceptionMessage().toString))
       .end()
 
