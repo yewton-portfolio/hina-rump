@@ -57,12 +57,11 @@ class MyRouteBuilder() extends RouteBuilder {
       .port(8875)
       .skipBindingOnErrorCode(false)
       .dataFormatProperty("prettyPrint", "true")
-      .bindingMode(RestBindingMode.json)
+      .bindingMode(RestBindingMode.auto)
 
     rest("/v1/topics/")
 
       .post("/{name}/events")
-      .consumes("application/json")
       .produces("application/json")
       .to("seda:dirty-event")
 
