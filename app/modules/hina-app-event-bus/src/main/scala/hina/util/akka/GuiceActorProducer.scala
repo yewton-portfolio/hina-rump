@@ -1,6 +1,8 @@
-import akka.actor.{ IndirectActorProducer, Actor }
+package hina.util.akka
+
+import akka.actor.{Actor, IndirectActorProducer}
 import com.google.inject.name.Names
-import com.google.inject.{ Key, Injector }
+import com.google.inject.{Injector, Key}
 
 /**
  * A creator for actors that allows us to return actor prototypes that are created by Guice

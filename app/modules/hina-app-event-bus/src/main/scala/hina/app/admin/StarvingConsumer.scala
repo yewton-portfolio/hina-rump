@@ -1,15 +1,21 @@
-import akka.actor.{ Actor, ActorLogging, Props }
+package hina.app.admin
+
+import akka.actor.{Actor, ActorLogging, Props}
 import akka.pattern.pipe
 import com.google.inject.Inject
-import kafka.consumer.{ ConsumerConnector, ConsumerIterator, KafkaStream }
+import hina.app.publisher.DirtyEventProcessor
+import hina.domain.TopicConsumerRepository
+import hina.util.akka.NamedActor
+import hina.util.kafka.KafkaConsumerFactory
+import kafka.consumer.{ConsumerConnector, ConsumerIterator, KafkaStream}
 import kafka.serializer.Decoder
 import kafka.utils.ZkUtils
 import org.I0Itec.zkclient.ZkClient
-import org.apache.avro.file.{ DataFileReader, SeekableByteArrayInput }
-import org.apache.avro.generic.{ GenericDatumReader, GenericRecord }
+import org.apache.avro.file.{DataFileReader, SeekableByteArrayInput}
+import org.apache.avro.generic.{GenericDatumReader, GenericRecord}
 
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.{ Future, blocking }
+import scala.concurrent.{Future, blocking}
 
 case class StartConsume(topic: String, groupId: String, number: Int)
 

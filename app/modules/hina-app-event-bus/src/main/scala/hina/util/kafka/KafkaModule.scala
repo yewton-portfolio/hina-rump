@@ -1,3 +1,5 @@
+package hina.util.kafka
+
 import java.util
 import java.util.Properties
 

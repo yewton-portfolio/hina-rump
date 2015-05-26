@@ -1,0 +1,37 @@
+package hina.app
+
+import akka.actor.ActorSystem
+import akka.camel._
+import com.google.inject._
+import hina.app.admin.{StarvingConsumer, TopicCreator, TopicCreatorModule}
+import hina.app.modules.{AkkaModule, ConfigModule, MainModule}
+import hina.app.publisher.{DirtyEventForwarder, DirtyEventModule}
+import hina.util.akka.GuiceAkkaExtension
+import hina.util.kafka.KafkaModule
+import net.codingwell.scalaguice.InjectorExtensions._
+
+import scala.concurrent.duration._
+import scala.language.postfixOps
+
+object Main extends App {
+  val injector = Guice.createInjector(
+    new ConfigModule(),
+    new AkkaModule(),
+    new MainModule(),
+    new DirtyEventModule(),
+    new TopicCreatorModule(),
+    new KafkaModule()
+  )
+
+  val system = injector.instance[ActorSystem]
+  val camel = CamelExtension(system)
+  camel.context.addRoutes(new MainRouteBuilder)
+  system.actorOf(GuiceAkkaExtension(system).props(DirtyEventForwarder.name))
+  system.actorOf(GuiceAkkaExtension(system).props(TopicCreator.name))
+  system.actorOf(GuiceAkkaExtension(system).props(StarvingConsumer.name))
+
+  sys.addShutdownHook {
+    system.shutdown()
+    system.awaitTermination(10.seconds)
+  }
+}

@@ -1,3 +1,5 @@
+package hina.util.akka
+
 import akka.actor._
 import akka.routing.Pool
 import com.google.inject.Injector

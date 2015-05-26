@@ -1,3 +1,5 @@
+package hina.app.publisher
+
 import java.io.ByteArrayOutputStream
 import java.util
 
@@ -9,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.inject.name.{Named, Names}
 import com.google.inject.{AbstractModule, Inject, Provides}
 import com.typesafe.config.Config
+import hina.domain.PublisherTopicRepository
+import hina.util.akka.{GuiceAkkaActorRefProvider, NamedActor}
 import io.netty.handler.codec.http.HttpResponseStatus
 import net.codingwell.scalaguice.ScalaModule
 import org.apache.avro.Schema

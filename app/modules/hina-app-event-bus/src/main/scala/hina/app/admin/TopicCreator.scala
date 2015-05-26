@@ -1,8 +1,11 @@
+package hina.app.admin
+
 import akka.actor.Actor
-import akka.camel.{ CamelMessage, Consumer }
+import akka.camel.{CamelMessage, Consumer}
 import akka.pattern.pipe
-import com.google.inject.name.{ Named, Names }
-import com.google.inject.{ AbstractModule, Inject }
+import com.google.inject.name.{Named, Names}
+import com.google.inject.{AbstractModule, Inject}
+import hina.util.akka.{GuiceAkkaActorRefProvider, NamedActor}
 import io.netty.handler.codec.http.HttpResponseStatus
 import kafka.admin.AdminUtils
 import kafka.common.TopicExistsException
@@ -11,7 +14,7 @@ import org.I0Itec.zkclient.ZkClient
 import org.apache.camel.Exchange
 
 import scala.beans.BeanProperty
-import scala.concurrent.{ ExecutionContext, Future, blocking }
+import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.util.control.NonFatal
 
 case class TopicCreateResponse(@BeanProperty topic: String,

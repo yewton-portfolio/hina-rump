@@ -1,3 +1,5 @@
+package hina.domain
+
 import com.google.inject.Inject
 import com.typesafe.config.Config
 
