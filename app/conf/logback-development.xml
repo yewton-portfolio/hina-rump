@@ -9,7 +9,7 @@
 
     <logger name="org.apache.zookeeper.ClientCnxn" level="info" />
 
-    <root level="debug">
+    <root level="info">
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>
