@@ -5,6 +5,7 @@ import akka.camel.{CamelMessage, Consumer}
 import akka.pattern.pipe
 import com.google.inject.name.{Named, Names}
 import com.google.inject.{AbstractModule, Inject}
+import hina.app.modules.Providers.ZkExecutionContextProvider
 import hina.util.akka.{GuiceAkkaActorRefProvider, NamedActor}
 import io.netty.handler.codec.http.HttpResponseStatus
 import kafka.admin.AdminUtils
@@ -39,7 +40,7 @@ object TopicCreator extends NamedActor {
   override final val name = "TopicCreator"
 }
 
-class TopicCreator @Inject() (zkClient: ZkClient, @Named("ZkIO") ec: ExecutionContext) extends Consumer {
+class TopicCreator @Inject() (zkClient: ZkClient, @Named(ZkExecutionContextProvider.name) ec: ExecutionContext) extends Consumer {
   override val endpointUri = "seda:create-topic"
   implicit private[this] val executionContext = ec
 

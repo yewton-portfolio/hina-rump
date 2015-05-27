@@ -3,6 +3,8 @@ package hina.app.admin
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.pattern.pipe
 import com.google.inject.Inject
+import com.google.inject.name.Named
+import hina.app.modules.Providers.ZkExecutionContextProvider
 import hina.app.publisher.DirtyEventProcessor
 import hina.domain.TopicConsumerRepository
 import hina.util.akka.NamedActor
@@ -15,7 +17,7 @@ import org.apache.avro.file.{DataFileReader, SeekableByteArrayInput}
 import org.apache.avro.generic.{GenericDatumReader, GenericRecord}
 
 import scala.collection.mutable.ListBuffer
-import scala.concurrent.{Future, blocking}
+import scala.concurrent.{ExecutionContext, Future, blocking}
 
 case class StartConsume(topic: String, groupId: String, number: Int)
 
@@ -27,7 +29,9 @@ class StarvingConsumer @Inject() (kafkaConsumerFactory: KafkaConsumerFactory,
                                   keyDecoder: Decoder[String],
                                   valueDecoder: Decoder[Array[Byte]],
                                   topicConsumerRepository: TopicConsumerRepository,
-                                  zkClient: ZkClient) extends Actor with ActorLogging {
+                                  zkClient: ZkClient,
+                                  @Named(ZkExecutionContextProvider.name) ec: ExecutionContext)
+    extends Actor with ActorLogging {
   private[this] val consumers = ListBuffer.empty[ConsumerConnector]
 
   override def receive = {
@@ -38,7 +42,7 @@ class StarvingConsumer @Inject() (kafkaConsumerFactory: KafkaConsumerFactory,
       val streams: List[KafkaStream[String, Array[Byte]]] =
         consumer.createMessageStreams(topicCountMap, keyDecoder, valueDecoder)(topic)
       streams.foreach { (stream: KafkaStream[String, Array[Byte]]) =>
-        val child = context.actorOf(Props(classOf[StarvingConsumeWorker], stream))
+        val child = context.actorOf(Props(classOf[StarvingConsumeWorker], stream, ec))
         child ! DoConsume
       }
   }
@@ -59,12 +63,15 @@ class StarvingConsumer @Inject() (kafkaConsumerFactory: KafkaConsumerFactory,
 
 case object DoConsume
 case class HasNext(result: Boolean)
-class StarvingConsumeWorker(kafkaStream: KafkaStream[String, Array[Byte]]) extends Actor with ActorLogging {
+
+class StarvingConsumeWorker(val kafkaStream: KafkaStream[String, Array[Byte]],
+                            val ec: ExecutionContext)
+    extends Actor with ActorLogging {
+  implicit val executionContext = ec
   val iterator: ConsumerIterator[String, Array[Byte]] = kafkaStream.iterator()
 
   override def receive = {
     case DoConsume =>
-      import context.dispatcher
       Future {
         blocking {
           HasNext(iterator.hasNext())

@@ -4,10 +4,9 @@ import akka.actor.ActorSystem
 import akka.camel._
 import com.google.inject._
 import hina.app.admin.{StarvingConsumer, TopicCreator, TopicCreatorModule}
-import hina.app.modules.{AkkaModule, ConfigModule, MainModule}
-import hina.app.publisher.{DirtyEventForwarder, DirtyEventModule}
+import hina.app.modules._
+import hina.app.publisher.DirtyEventForwarder
 import hina.util.akka.GuiceAkkaExtension
-import hina.util.kafka.KafkaModule
 import net.codingwell.scalaguice.InjectorExtensions._
 
 import scala.concurrent.duration._

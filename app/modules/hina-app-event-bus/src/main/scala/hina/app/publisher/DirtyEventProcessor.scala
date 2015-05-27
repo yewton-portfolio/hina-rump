@@ -3,18 +3,17 @@ package hina.app.publisher
 import java.io.ByteArrayOutputStream
 import java.util
 
-import akka.actor.{Actor, ActorRef, ActorSystem}
+import akka.actor.Actor
 import akka.camel.CamelMessage
 import akka.pattern.pipe
-import akka.routing.{DefaultResizer, RoundRobinPool}
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.google.inject.name.{Named, Names}
-import com.google.inject.{AbstractModule, Inject, Provides}
+import com.google.inject.Inject
+import com.google.inject.name.Named
 import com.typesafe.config.Config
+import hina.app.modules.Providers.ZkExecutionContextProvider
 import hina.domain.PublisherTopicRepository
-import hina.util.akka.{GuiceAkkaActorRefProvider, NamedActor}
+import hina.util.akka.NamedActor
 import io.netty.handler.codec.http.HttpResponseStatus
-import net.codingwell.scalaguice.ScalaModule
 import org.apache.avro.Schema
 import org.apache.avro.file.DataFileWriter
 import org.apache.avro.generic.{GenericData, GenericDatumWriter, GenericRecord}
@@ -30,19 +29,6 @@ case class DirtyEventRequest(name: String, publisherId: String, body: String, ex
 case class DirtyEventBadRequest(e: Throwable)
 case class DirtyEventResponse(@BeanProperty name: String, @(JsonProperty @field)("exchange_id") exchangeId: String)
 case class DirtyEventErrorResponse(@BeanProperty code: String, @BeanProperty detail: String)
-
-class DirtyEventModule extends AbstractModule with ScalaModule with GuiceAkkaActorRefProvider {
-  override def configure(): Unit = {
-    bind[Actor].annotatedWith(Names.named(DirtyEventProcessor.name)).to[DirtyEventProcessor]
-  }
-
-  @Provides
-  @Named(DirtyEventProcessor.name)
-  def provideDirtyEventProcessorRef(@Inject() system: ActorSystem): ActorRef = {
-    val resizer = DefaultResizer(lowerBound = 2, upperBound = 10)
-    provideActorRef(system, DirtyEventProcessor.name, RoundRobinPool(10, Some(resizer)))
-  }
-}
 
 object DirtyEventProcessor extends NamedActor {
   override final val name = "DirtyEventProcessor"
@@ -65,7 +51,7 @@ object DirtyEventProcessor extends NamedActor {
 class DirtyEventProcessor @Inject() (val config: Config,
                                      val repository: PublisherTopicRepository,
                                      val producer: Producer[String, Array[Byte]],
-                                     @Named("KafkaIO") val executionContext: ExecutionContext) extends Actor {
+                                     @Named(ZkExecutionContextProvider.name) val executionContext: ExecutionContext) extends Actor {
   private[this] val producerConfigs: util.Map[String, Object] = config.getConfig("kafka.producer").root().unwrapped()
   producerConfigs.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
   producerConfigs.put("value.serializer", "org.apache.kafka.common.serialization.ByteArraySerializer")
