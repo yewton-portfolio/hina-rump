@@ -1,4 +1,4 @@
-package hina.domain
+package hina.domain.publisher
 
 trait PublisherTopicRepository {
   def exists(publisherName: String, topicName: String): Boolean

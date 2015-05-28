@@ -1,5 +1,6 @@
 package hina.app
 
+import hina.app.admin.PublisherManager
 import io.netty.handler.codec.http.HttpResponseStatus
 import org.apache.camel.Exchange
 import org.apache.camel.builder.RouteBuilder
@@ -37,5 +38,11 @@ class MainRouteBuilder() extends RouteBuilder {
       .put("/{topic}")
       .produces("application/json")
       .to("seda:create-topic")
+
+    rest("/v1/publishers/")
+
+      .post("/")
+      .consumes("application/json")
+      .to(PublisherManager.Forwarder.endpointUri)
   }
 }

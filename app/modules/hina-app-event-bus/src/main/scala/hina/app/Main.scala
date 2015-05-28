@@ -3,7 +3,7 @@ package hina.app
 import akka.actor.ActorSystem
 import akka.camel._
 import com.google.inject._
-import hina.app.admin.{StarvingConsumer, TopicCreator, TopicCreatorModule}
+import hina.app.admin.{PublisherManager, StarvingConsumer, TopicCreator, TopicCreatorModule}
 import hina.app.modules._
 import hina.app.publisher.DirtyEventForwarder
 import hina.util.akka.GuiceAkkaExtension
@@ -27,6 +27,7 @@ object Main extends App {
   camel.context.addRoutes(new MainRouteBuilder)
   system.actorOf(GuiceAkkaExtension(system).props(DirtyEventForwarder.name))
   system.actorOf(GuiceAkkaExtension(system).props(TopicCreator.name))
+  system.actorOf(GuiceAkkaExtension(system).props(PublisherManager.Forwarder.name))
   system.actorOf(GuiceAkkaExtension(system).props(StarvingConsumer.name))
 
   sys.addShutdownHook {

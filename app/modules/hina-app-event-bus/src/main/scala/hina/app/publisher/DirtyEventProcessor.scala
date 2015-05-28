@@ -11,7 +11,7 @@ import com.google.inject.Inject
 import com.google.inject.name.Named
 import com.typesafe.config.Config
 import hina.app.modules.Providers.ZkExecutionContextProvider
-import hina.domain.PublisherTopicRepository
+import hina.domain.publisher.PublisherTopicRepository
 import hina.util.akka.NamedActor
 import io.netty.handler.codec.http.HttpResponseStatus
 import org.apache.avro.Schema

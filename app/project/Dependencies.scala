@@ -58,6 +58,7 @@ object Dependencies {
     "org.apache.camel" % "camel-core" % camelVersion,
     "org.apache.camel" % "camel-scala" % camelVersion,
     "org.apache.camel" % "camel-guice" % camelVersion,
+    "org.apache.camel" % "camel-disruptor" % camelVersion,
     "org.apache.camel" % "camel-test" % camelVersion % "test")
 
   val camelJettyDeps = Seq(
