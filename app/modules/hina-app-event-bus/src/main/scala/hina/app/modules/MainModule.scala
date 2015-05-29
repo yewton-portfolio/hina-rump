@@ -6,7 +6,7 @@ import com.google.inject.name.{Named, Names}
 import com.google.inject.{AbstractModule, Inject, Provides, Singleton}
 import com.typesafe.config.Config
 import hina.app.RestConsumer
-import hina.app.admin.{PublisherManager, StarvingConsumer}
+import hina.app.admin.{PublisherManager, StarvingConsumer, TopicCreator}
 import hina.app.modules.Providers.ZkExecutionContextProvider
 import hina.app.publisher.DirtyEventForwarder
 import hina.domain.publisher.{PublisherRepository, PublisherRepositoryOnMemory, PublisherTopicRepository, PublisherTopicRepositoryOnMemory}
@@ -24,6 +24,8 @@ class MainModule extends AbstractModule with ScalaModule with GuiceAkkaActorRefP
     bind[Actor].annotatedWith(Names.named(StarvingConsumer.name)).to[StarvingConsumer]
     bind[Actor].annotatedWithName(PublisherManager.Forwarder.name).to[PublisherManager.Forwarder]
     bind[Actor].annotatedWithName(PublisherManager.name).to[PublisherManager]
+    bind[Actor].annotatedWithName(TopicCreator.Forwarder.name).to[TopicCreator.Forwarder]
+    bind[Actor].annotatedWithName(TopicCreator.name).to[TopicCreator]
     bind[PublisherTopicRepository].to[PublisherTopicRepositoryOnMemory]
     bind[TopicConsumerRepository].to[TopicConsumerRepositoryOnMemory]
     bind[PublisherRepository].to[PublisherRepositoryOnMemory]
@@ -50,4 +52,12 @@ class MainModule extends AbstractModule with ScalaModule with GuiceAkkaActorRefP
   def providePublisherManagerRef(system: ActorSystem,
                                  @Named(RestConsumer.poolName) pool: Pool): ActorRef =
     provideActorRef(system, PublisherManager.name, pool)
+
+  @Provides
+  @Named(TopicCreator.name)
+  @Singleton
+  @Inject
+  def provideTopicCreatorRef(system: ActorSystem,
+                             @Named(RestConsumer.poolName) pool: Pool): ActorRef =
+    provideActorRef(system, TopicCreator.name, pool)
 }
