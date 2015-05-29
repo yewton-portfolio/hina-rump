@@ -58,6 +58,7 @@ object Dependencies {
     "org.apache.camel" % "camel-core" % camelVersion,
     "org.apache.camel" % "camel-scala" % camelVersion,
     "org.apache.camel" % "camel-guice" % camelVersion,
+    "org.apache.camel" % "camel-xmpp" % camelVersion,
     "org.apache.camel" % "camel-test" % camelVersion % "test")
 
   val camelJettyDeps = Seq(
@@ -80,7 +81,7 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-stream-experimental" % "1.0-M5")
 
   val guiceDeps = Seq(
-    "net.codingwell" %% "scala-guice" % "4.0.0-beta5")
+    "net.codingwell" %% "scala-guice" % "4.0.0")
 
   val kafkaVersion = "0.8.2.1"
   val kafkaDeps = Seq(
