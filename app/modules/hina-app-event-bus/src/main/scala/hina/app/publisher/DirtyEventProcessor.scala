@@ -16,14 +16,14 @@ import hina.util.akka.NamedActor
 import io.netty.handler.codec.http.HttpResponseStatus
 import org.apache.avro.Schema
 import org.apache.avro.file.DataFileWriter
-import org.apache.avro.generic.{GenericData, GenericDatumWriter, GenericRecord}
+import org.apache.avro.generic.{ GenericData, GenericDatumWriter, GenericRecord }
 import org.apache.camel.Exchange
 import org.apache.kafka.clients.producer._
 import org.apache.kafka.common.errors.TimeoutException
 
 import scala.annotation.meta.field
 import scala.beans.BeanProperty
-import scala.concurrent.{ExecutionContext, Promise}
+import scala.concurrent.{ ExecutionContext, Promise }
 
 case class DirtyEventRequest(name: String, publisherId: String, body: String, exchangeId: String)
 case class DirtyEventBadRequest(e: Throwable)

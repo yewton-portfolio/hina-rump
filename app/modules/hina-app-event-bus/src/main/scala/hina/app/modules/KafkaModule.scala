@@ -2,12 +2,12 @@ package hina.app.modules
 
 import java.util
 
-import com.google.inject.{AbstractModule, Inject, Provides, Singleton}
+import com.google.inject.{ AbstractModule, Inject, Provides, Singleton }
 import com.typesafe.config.Config
-import hina.util.kafka.{KafkaConsumerFactory, ZooKeeperConsumerFactory}
-import kafka.serializer.{Decoder, DefaultDecoder, StringDecoder}
+import hina.util.kafka.{ KafkaConsumerFactory, ZooKeeperConsumerFactory }
+import kafka.serializer.{ Decoder, DefaultDecoder, StringDecoder }
 import net.codingwell.scalaguice.ScalaModule
-import org.apache.kafka.clients.producer.{KafkaProducer, Producer}
+import org.apache.kafka.clients.producer.{ KafkaProducer, Producer }
 
 /**
  *

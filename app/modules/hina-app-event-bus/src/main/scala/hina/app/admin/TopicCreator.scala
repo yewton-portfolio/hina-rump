@@ -1,12 +1,14 @@
 package hina.app.admin
 
+import java.util.Properties
+
 import akka.actor.ActorRef
 import akka.camel.CamelMessage
 import akka.pattern.pipe
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import hina.app.modules.Providers.ZkExecutionContextProvider
-import hina.app.{RestConsumer, RestProcessor}
+import hina.app.{ RestConsumer, RestProcessor }
 import hina.util.akka.NamedActor
 import io.netty.handler.codec.http.HttpResponseStatus
 import kafka.admin.AdminUtils
@@ -15,7 +17,7 @@ import org.I0Itec.zkclient.ZkClient
 import org.apache.camel.Exchange
 
 import scala.beans.BeanProperty
-import scala.concurrent.{ExecutionContext, Future, blocking}
+import scala.concurrent.{ ExecutionContext, Future, blocking }
 import scala.util.control.NonFatal
 
 object TopicCreator extends NamedActor {
@@ -44,9 +46,7 @@ object TopicCreator extends NamedActor {
 }
 
 class TopicCreator @Inject() (zkClient: ZkClient,
-                              @Named(ZkExecutionContextProvider.name) ec: ExecutionContext) extends RestProcessor {
-  implicit private[this] val executionContext = ec
-
+                              @Named(ZkExecutionContextProvider.name) implicit val ec: ExecutionContext) extends RestProcessor {
   override def receive = {
     case msg: CamelMessage =>
       val params = for {
@@ -56,12 +56,14 @@ class TopicCreator @Inject() (zkClient: ZkClient,
       } yield (topic, partitions, replicas)
       val result = Future.fromTry(params).map {
         case (topic, partitions, replicas) =>
+          val topicConfig = new Properties()
+          topicConfig.put("min.insync.replicas", "2")
           blocking {
-            AdminUtils.createTopic(zkClient, topic, partitions, replicas)
-            TopicCreator.Response(topic, partitions, replicas)
+            AdminUtils.createTopic(zkClient, topic, partitions, replicas, topicConfig)
           }
+          TopicCreator.Response(topic, partitions, replicas)
       }
-      result.recover {
+      val future = result.recover {
         case e: TopicExistsException =>
           TopicCreator.ErrorResponse.asCamelMessage("conflict", e.getMessage, HttpResponseStatus.CONFLICT)
         case e: NoSuchElementException =>
@@ -71,6 +73,7 @@ class TopicCreator @Inject() (zkClient: ZkClient,
             HttpResponseStatus.BAD_REQUEST)
         case NonFatal(e) =>
           TopicCreator.ErrorResponse.asCamelMessage("error", e.getMessage, HttpResponseStatus.INTERNAL_SERVER_ERROR)
-      } pipeTo sender()
+      }
+      pipe(future).to(sender())
   }
 }

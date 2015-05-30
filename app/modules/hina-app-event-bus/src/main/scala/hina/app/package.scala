@@ -1,7 +1,7 @@
 package hina
 
-import akka.actor.{Actor, ActorRef}
-import akka.camel.{CamelExtension, CamelMessage, Consumer}
+import akka.actor.{ Actor, ActorRef }
+import akka.camel.{ CamelExtension, CamelMessage, Consumer }
 import org.apache.camel.impl.DefaultCamelContext
 
 package object app {

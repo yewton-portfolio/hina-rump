@@ -3,8 +3,8 @@ package hina.util.kafka
 import java.util.Properties
 
 import com.google.inject.Inject
-import com.typesafe.config.{Config, ConfigValue}
-import kafka.consumer.{Consumer, ConsumerConfig, ConsumerConnector}
+import com.typesafe.config.{ Config, ConfigValue }
+import kafka.consumer.{ Consumer, ConsumerConfig, ConsumerConnector }
 
 import scala.collection.JavaConverters._
 

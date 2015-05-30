@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 import akka.camel.CamelMessage
 import com.google.inject.Inject
 import com.google.inject.name.Named
-import hina.app.{RestConsumer, RestProcessor}
+import hina.app.{ RestConsumer, RestProcessor }
 import hina.domain.publisher.PublisherRepository
 import hina.util.akka.NamedActor
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -26,7 +26,6 @@ object PublisherManager extends NamedActor {
 class PublisherManager @Inject() (val repo: PublisherRepository) extends RestProcessor {
   override def receive = {
     case msg: CamelMessage =>
-      println(msg.headerAs[String]("Content-Type").toString)
       sender() ! CamelMessage("I am " + self.path, Map(
         Exchange.HTTP_RESPONSE_CODE -> HttpResponseStatus.OK.code()))
   }

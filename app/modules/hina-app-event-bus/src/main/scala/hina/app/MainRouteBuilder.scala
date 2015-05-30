@@ -1,6 +1,6 @@
 package hina.app
 
-import hina.app.admin.{PublisherManager, TopicCreator}
+import hina.app.admin.{ PublisherManager, TopicCreator }
 import io.netty.handler.codec.http.HttpResponseStatus
 import org.apache.camel.Exchange
 import org.apache.camel.builder.RouteBuilder

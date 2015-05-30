@@ -1,16 +1,16 @@
 package hina.app.modules
 
-import akka.actor.{Actor, ActorRef, ActorSystem}
+import akka.actor.{ Actor, ActorRef, ActorSystem }
 import akka.routing._
-import com.google.inject.name.{Named, Names}
-import com.google.inject.{AbstractModule, Inject, Provides, Singleton}
+import com.google.inject.name.{ Named, Names }
+import com.google.inject.{ AbstractModule, Inject, Provides, Singleton }
 import com.typesafe.config.Config
 import hina.app.RestConsumer
-import hina.app.admin.{PublisherManager, StarvingConsumer, TopicCreator}
-import hina.app.modules.Providers.ZkExecutionContextProvider
+import hina.app.admin.{ PublisherManager, StarvingConsumer, TopicCreator }
+import hina.app.modules.Providers.{ BlockingIOExecutionContextProvider, ZkExecutionContextProvider }
 import hina.app.publisher.DirtyEventForwarder
-import hina.domain.publisher.{PublisherRepository, PublisherRepositoryOnMemory, PublisherTopicRepository, PublisherTopicRepositoryOnMemory}
-import hina.domain.{TopicConsumerRepository, TopicConsumerRepositoryOnMemory}
+import hina.domain.publisher.{ PublisherRepository, PublisherRepositoryOnMemory, PublisherTopicRepository, PublisherTopicRepositoryOnMemory }
+import hina.domain.{ TopicConsumerRepository, TopicConsumerRepositoryOnMemory }
 import hina.util.akka.GuiceAkkaActorRefProvider
 import kafka.utils.ZKStringSerializer
 import net.codingwell.scalaguice.ScalaModule
@@ -30,6 +30,7 @@ class MainModule extends AbstractModule with ScalaModule with GuiceAkkaActorRefP
     bind[TopicConsumerRepository].to[TopicConsumerRepositoryOnMemory]
     bind[PublisherRepository].to[PublisherRepositoryOnMemory]
     bind[ExecutionContext].annotatedWithName(ZkExecutionContextProvider.name).toProvider[ZkExecutionContextProvider]
+    bind[ExecutionContext].annotatedWithName(BlockingIOExecutionContextProvider.name).toProvider[BlockingIOExecutionContextProvider]
   }
 
   @Provides
@@ -43,7 +44,7 @@ class MainModule extends AbstractModule with ScalaModule with GuiceAkkaActorRefP
   @Named(RestConsumer.poolName)
   @Inject
   def provideRestConsumerPool(system: ActorSystem): Pool =
-    RoundRobinPool(5, Some(DefaultResizer(lowerBound = 5, upperBound = 10)))
+    RoundRobinPool(1, Some(DefaultResizer(lowerBound = 1, upperBound = 100)))
 
   @Provides
   @Named(PublisherManager.name)

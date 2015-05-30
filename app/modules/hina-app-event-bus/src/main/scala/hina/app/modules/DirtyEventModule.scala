@@ -1,9 +1,9 @@
 package hina.app.modules
 
-import akka.actor.{Actor, ActorRef, ActorSystem}
-import akka.routing.{DefaultResizer, RoundRobinPool}
-import com.google.inject.name.{Named, Names}
-import com.google.inject.{AbstractModule, Inject, Provides}
+import akka.actor.{ Actor, ActorRef, ActorSystem }
+import akka.routing.{ DefaultResizer, RoundRobinPool }
+import com.google.inject.name.{ Named, Names }
+import com.google.inject.{ AbstractModule, Inject, Provides }
 import hina.app.publisher.DirtyEventProcessor
 import hina.util.akka.GuiceAkkaActorRefProvider
 import net.codingwell.scalaguice.ScalaModule

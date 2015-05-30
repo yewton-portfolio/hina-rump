@@ -3,7 +3,7 @@ package hina.app
 import akka.actor.ActorSystem
 import akka.camel._
 import com.google.inject._
-import hina.app.admin.{PublisherManager, StarvingConsumer, TopicCreator}
+import hina.app.admin.{ PublisherManager, StarvingConsumer, TopicCreator }
 import hina.app.modules._
 import hina.app.publisher.DirtyEventForwarder
 import hina.util.akka.GuiceAkkaExtension
