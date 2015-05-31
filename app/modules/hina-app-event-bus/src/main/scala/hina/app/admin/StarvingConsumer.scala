@@ -5,16 +5,13 @@ import akka.pattern.pipe
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import hina.app.modules.Providers.ZkExecutionContextProvider
-import hina.app.publisher.DirtyEventProcessor
-import hina.domain.TopicConsumerRepository
+import hina.domain.{ Event, Topic, TopicConsumerRepository }
 import hina.util.akka.NamedActor
 import hina.util.kafka.KafkaConsumerFactory
 import kafka.consumer.{ ConsumerConnector, ConsumerIterator, KafkaStream }
 import kafka.serializer.Decoder
 import kafka.utils.ZkUtils
 import org.I0Itec.zkclient.ZkClient
-import org.apache.avro.file.{ DataFileReader, SeekableByteArrayInput }
-import org.apache.avro.generic.{ GenericDatumReader, GenericRecord }
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.{ ExecutionContext, Future, blocking }
@@ -27,7 +24,7 @@ object StarvingConsumer extends NamedActor {
 
 class StarvingConsumer @Inject() (kafkaConsumerFactory: KafkaConsumerFactory,
                                   keyDecoder: Decoder[String],
-                                  valueDecoder: Decoder[Array[Byte]],
+                                  valueDecoder: Decoder[Event],
                                   topicConsumerRepository: TopicConsumerRepository,
                                   zkClient: ZkClient,
                                   @Named(ZkExecutionContextProvider.name) ec: ExecutionContext)
@@ -39,16 +36,16 @@ class StarvingConsumer @Inject() (kafkaConsumerFactory: KafkaConsumerFactory,
       val consumer: ConsumerConnector = kafkaConsumerFactory.create(groupId)
       consumers.append(consumer)
       val topicCountMap = Map(topic -> number)
-      val streams: List[KafkaStream[String, Array[Byte]]] =
+      val streams: List[KafkaStream[String, Event]] =
         consumer.createMessageStreams(topicCountMap, keyDecoder, valueDecoder)(topic)
-      streams.foreach { (stream: KafkaStream[String, Array[Byte]]) =>
+      streams.foreach { (stream: KafkaStream[String, Event]) =>
         val child = context.actorOf(Props(classOf[StarvingConsumeWorker], stream, ec))
         child ! DoConsume
       }
   }
 
   override def preStart(): Unit = {
-    ZkUtils.getAllTopics(zkClient).sorted.foreach { topic =>
+    ZkUtils.getAllTopics(zkClient).filter(_.startsWith(Topic.prefix)) foreach { topic =>
       self ! StartConsume(topic, s"starving-consumer-$topic", 2)
     }
   }
@@ -64,11 +61,11 @@ class StarvingConsumer @Inject() (kafkaConsumerFactory: KafkaConsumerFactory,
 case object DoConsume
 case class HasNext(result: Boolean)
 
-class StarvingConsumeWorker(val kafkaStream: KafkaStream[String, Array[Byte]],
+class StarvingConsumeWorker(val kafkaStream: KafkaStream[String, Event],
                             val ec: ExecutionContext)
     extends Actor with ActorLogging {
   implicit val executionContext = ec
-  val iterator: ConsumerIterator[String, Array[Byte]] = kafkaStream.iterator()
+  val iterator: ConsumerIterator[String, Event] = kafkaStream.iterator()
 
   override def receive = {
     case DoConsume =>
@@ -79,10 +76,8 @@ class StarvingConsumeWorker(val kafkaStream: KafkaStream[String, Array[Byte]],
       } pipeTo self
     case HasNext(result) =>
       if (result) {
-        val msg: Array[Byte] = iterator.next().message()
-        val datumReader = new GenericDatumReader[GenericRecord](DirtyEventProcessor.schema)
-        val dataReader = new DataFileReader[GenericRecord](new SeekableByteArrayInput(msg), datumReader)
-        log.info(s"#### ${self.path} Consumed: " + dataReader.next().toString)
+        val event: Event = iterator.next().message()
+        log.info(s"#### ${self.path} Consumed: " + event.toString)
         self ! DoConsume
       } else {
         context.stop(self)

@@ -5,7 +5,7 @@ import akka.camel._
 import com.google.inject._
 import hina.app.admin.{ PublisherManager, StarvingConsumer, TopicCreator }
 import hina.app.modules._
-import hina.app.publisher.DirtyEventForwarder
+import hina.app.publisher.EventCreatorHttpPost
 import hina.util.akka.GuiceAkkaExtension
 import net.codingwell.scalaguice.InjectorExtensions._
 
@@ -17,14 +17,13 @@ object Main extends App {
     new ConfigModule(),
     new AkkaModule(),
     new MainModule(),
-    new DirtyEventModule(),
     new KafkaModule()
   )
 
   val system = injector.instance[ActorSystem]
   val camel = CamelExtension(system)
   camel.context.addRoutes(new MainRouteBuilder)
-  system.actorOf(GuiceAkkaExtension(system).props(DirtyEventForwarder.name))
+  system.actorOf(GuiceAkkaExtension(system).props(EventCreatorHttpPost.Forwarder.name))
   system.actorOf(GuiceAkkaExtension(system).props(TopicCreator.Forwarder.name))
   system.actorOf(GuiceAkkaExtension(system).props(PublisherManager.Forwarder.name))
   system.actorOf(GuiceAkkaExtension(system).props(StarvingConsumer.name))

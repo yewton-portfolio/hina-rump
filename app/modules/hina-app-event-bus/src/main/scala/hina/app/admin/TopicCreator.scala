@@ -9,6 +9,7 @@ import com.google.inject.Inject
 import com.google.inject.name.Named
 import hina.app.modules.Providers.ZkExecutionContextProvider
 import hina.app.{ RestConsumer, RestProcessor }
+import hina.domain.Topic
 import hina.util.akka.NamedActor
 import io.netty.handler.codec.http.HttpResponseStatus
 import kafka.admin.AdminUtils
@@ -22,7 +23,6 @@ import scala.util.control.NonFatal
 
 object TopicCreator extends NamedActor {
   override final val name = "TopicCreator"
-
   object Forwarder extends NamedActor {
     override final val name = "TopicCreatorForwarder"
     final val endpointUri = "seda:topic-creator"
@@ -59,7 +59,7 @@ class TopicCreator @Inject() (zkClient: ZkClient,
           val topicConfig = new Properties()
           topicConfig.put("min.insync.replicas", "2")
           blocking {
-            AdminUtils.createTopic(zkClient, topic, partitions, replicas, topicConfig)
+            AdminUtils.createTopic(zkClient, s"${Topic.prefix}.$topic", partitions, replicas, topicConfig)
           }
           TopicCreator.Response(topic, partitions, replicas)
       }

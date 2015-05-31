@@ -1,6 +1,8 @@
 package hina.app
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import hina.app.admin.{ PublisherManager, TopicCreator }
+import hina.app.publisher.EventCreatorHttpPost
 import io.netty.handler.codec.http.HttpResponseStatus
 import org.apache.camel.Exchange
 import org.apache.camel.builder.RouteBuilder
@@ -15,10 +17,12 @@ class MainRouteBuilder() extends RouteBuilder {
   case class ErrorResponse(@BeanProperty message: String, @BeanProperty detail: String)
 
   override def configure(): Unit = {
+    val mapper = new ObjectMapper()
     configureRoutes(getContext).onException(classOf[Exception])
       .handled(true)
       .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(HttpResponseStatus.INTERNAL_SERVER_ERROR.code()))
-      .setBody().constant(ErrorResponse("Internal Server Error", exceptionMessage().toString))
+      .setBody()
+      .constant(mapper.writeValueAsString(ErrorResponse("Internal Server Error", exceptionMessage().toString)))
       .end()
 
     restConfiguration()
@@ -27,13 +31,14 @@ class MainRouteBuilder() extends RouteBuilder {
       .port(8875)
       .skipBindingOnErrorCode(false)
       .dataFormatProperty("prettyPrint", "true")
-      .bindingMode(RestBindingMode.auto)
+      .bindingMode(RestBindingMode.json)
 
     rest("/v1/topics/")
 
-      .post("/{name}/events")
+      .post("/{topic}/events")
       .produces("application/json")
-      .to("seda:dirty-event")
+      .bindingMode(RestBindingMode.off)
+      .to(EventCreatorHttpPost.Forwarder.endpointUri)
 
       .put("/{topic}")
       .produces("application/json")
