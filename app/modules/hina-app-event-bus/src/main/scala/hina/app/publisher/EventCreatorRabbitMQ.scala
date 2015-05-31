@@ -1,7 +1,8 @@
 package hina.app.publisher
 
+import akka.actor.Status.Failure
 import akka.actor.{ ActorLogging, ActorRef }
-import akka.camel.{ CamelMessage, Consumer }
+import akka.camel.{ Ack, CamelMessage, Consumer }
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import hina.domain.{ Event, Topic }
@@ -32,6 +33,7 @@ class EventCreatorRabbitMQ @Inject() (@Named(EventCreator.name) val processor: A
   )
   final val optionString = options.map { case (k, v) => s"$k=$v" }.mkString("&")
   override final val endpointUri = s"rabbitmq://$host:$port/$exchangeName?$optionString"
+  override def autoAck = false
 
   override def receive = {
     case msg: CamelMessage =>
@@ -49,13 +51,14 @@ class EventCreatorRabbitMQ @Inject() (@Named(EventCreator.name) val processor: A
         EventCreator.Request(Topic.withName(exchangeName), event, sender())
       }
       t.foreach(processor ! _)
-      println(msg.toString())
-    case EventCreator.Response(event, _) =>
+    case EventCreator.Response(event, originalSender) =>
+      originalSender ! Ack
       // @todo reply-to が設定してあれば返す等の処理
       log.debug("{} ok", event)
-    case EventCreator.ErrorResponse(reason, e, _) => reason match {
+    case EventCreator.ErrorResponse(reason, e, originalSender) => reason match {
       case EventCreator.ErrorReason.TimeOut |
         EventCreator.ErrorReason.Unknown =>
+        originalSender ! Failure(e)
         // @todo reply-to が設定してあれば返す等の処理
         log.error(e, "error")
     }

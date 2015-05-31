@@ -8,9 +8,6 @@ import akka.camel.{ CamelMessage, Producer }
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-/**
- *
- */
 object RabbitMQPublisher extends App {
 
   val system = ActorSystem("rabbitmq-publisher")
@@ -19,7 +16,7 @@ object RabbitMQPublisher extends App {
   val k = system.actorOf(Props(classOf[Kicker], a))
   import system.dispatcher
   system.scheduler.schedule(0 milliseconds,
-    10 milliseconds,
+    25 milliseconds,
     k,
     Tick)
 
@@ -37,7 +34,7 @@ object RabbitMQPublisher extends App {
   }
 }
 
-class RabbitMQPublisher extends Producer {
+class RabbitMQPublisher extends Actor with Producer {
   final val options = Map(
     "username" -> "bunny",
     "password" -> "bunny",

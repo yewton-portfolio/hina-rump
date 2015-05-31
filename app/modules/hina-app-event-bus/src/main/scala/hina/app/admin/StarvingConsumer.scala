@@ -5,7 +5,7 @@ import akka.pattern.pipe
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import hina.app.modules.Providers.ZkExecutionContextProvider
-import hina.domain.{ Event, Topic, TopicConsumerRepository }
+import hina.domain.{ Event, Topic, TopicSubscriberRepository }
 import hina.util.akka.NamedActor
 import hina.util.kafka.KafkaConsumerFactory
 import kafka.consumer.{ ConsumerConnector, ConsumerIterator, KafkaStream }
@@ -25,7 +25,7 @@ object StarvingConsumer extends NamedActor {
 class StarvingConsumer @Inject() (kafkaConsumerFactory: KafkaConsumerFactory,
                                   keyDecoder: Decoder[String],
                                   valueDecoder: Decoder[Event],
-                                  topicConsumerRepository: TopicConsumerRepository,
+                                  topicConsumerRepository: TopicSubscriberRepository,
                                   zkClient: ZkClient,
                                   @Named(ZkExecutionContextProvider.name) ec: ExecutionContext)
     extends Actor with ActorLogging {

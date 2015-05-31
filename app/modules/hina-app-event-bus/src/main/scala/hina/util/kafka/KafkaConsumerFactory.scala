@@ -17,10 +17,10 @@ class ZooKeeperConsumerFactory @Inject() (config: Config) extends KafkaConsumerF
     val props = new Properties()
     props.put("zookeeper.connect", config.getString("zookeeper.connect"))
     props.put("group.id", groupId)
-    props.put("auto.commit.enable", "false")
+    props.put("auto.commit.enable", "true")
     props.put("offsets.storage", "kafka")
     props.put("dual.commit.enabled", "false")
-    props.put("auto.offset.reset", "smallest")
+    props.put("auto.offset.reset", "largest")
     props.put("exclude.internal.topics", "true")
     config.getConfig("kafka.consumer").root().asScala.foreach {
       case (key: String, value: ConfigValue) =>

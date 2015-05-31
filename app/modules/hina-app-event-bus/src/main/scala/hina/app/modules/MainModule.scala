@@ -9,8 +9,9 @@ import hina.app.RestConsumer
 import hina.app.admin.{ PublisherManager, StarvingConsumer, TopicCreator }
 import hina.app.modules.Providers.{ BlockingIOExecutionContextProvider, ZkExecutionContextProvider }
 import hina.app.publisher.{ EventCreator, EventCreatorHttpPost, EventCreatorRabbitMQ }
+import hina.app.subscriber.EventConsumer
 import hina.domain.publisher.{ PublisherRepository, PublisherRepositoryOnMemory, TopicPublisherRepository, TopicPublisherRepositoryOnMemory }
-import hina.domain.{ TopicConsumerRepository, TopicConsumerRepositoryOnMemory }
+import hina.domain.{ TopicSubscriberRepository, TopicSubscriberRepositoryOnMemory }
 import hina.util.akka.GuiceAkkaActorRefProvider
 import kafka.utils.ZKStringSerializer
 import net.codingwell.scalaguice.ScalaModule
@@ -29,8 +30,9 @@ class MainModule extends AbstractModule with ScalaModule with GuiceAkkaActorRefP
     bind[Actor].annotatedWithName(EventCreatorHttpPost.name).to[EventCreatorHttpPost]
     bind[Actor].annotatedWithName(EventCreator.name).to[EventCreator]
     bind[Actor].annotatedWithName(EventCreatorRabbitMQ.name).to[EventCreatorRabbitMQ]
+    bind[Actor].annotatedWithName(EventConsumer.name).to[EventConsumer]
     bind[TopicPublisherRepository].to[TopicPublisherRepositoryOnMemory]
-    bind[TopicConsumerRepository].to[TopicConsumerRepositoryOnMemory]
+    bind[TopicSubscriberRepository].to[TopicSubscriberRepositoryOnMemory]
     bind[PublisherRepository].to[PublisherRepositoryOnMemory]
     bind[ExecutionContext].annotatedWithName(ZkExecutionContextProvider.name).toProvider[ZkExecutionContextProvider]
     bind[ExecutionContext].annotatedWithName(BlockingIOExecutionContextProvider.name).toProvider[BlockingIOExecutionContextProvider]
