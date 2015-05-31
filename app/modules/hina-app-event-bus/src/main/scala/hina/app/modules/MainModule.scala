@@ -46,7 +46,7 @@ class MainModule extends AbstractModule with ScalaModule with GuiceAkkaActorRefP
   @Named(RestConsumer.poolName)
   @Inject
   def provideRestConsumerPool(system: ActorSystem): Pool =
-    RoundRobinPool(1, Some(DefaultResizer(lowerBound = 1, upperBound = 100)))
+    RoundRobinPool(10, Some(DefaultResizer(lowerBound = 5, upperBound = 100)))
 
   @Provides
   @Named(PublisherManager.name)
@@ -71,7 +71,7 @@ class MainModule extends AbstractModule with ScalaModule with GuiceAkkaActorRefP
   def provideEventCreatorRef(system: ActorSystem): ActorRef =
     provideActorRef(
       system,
-      EventCreator.name, RoundRobinPool(2, Some(DefaultResizer(lowerBound = 1, upperBound = 100))))
+      EventCreator.name, RoundRobinPool(2, Some(DefaultResizer(lowerBound = 1, upperBound = 500))))
 
   @Provides
   @Named(EventCreatorHttpPost.name)
