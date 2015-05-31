@@ -5,7 +5,7 @@ import akka.camel._
 import com.google.inject._
 import hina.app.admin.{ PublisherManager, StarvingConsumer, TopicCreator }
 import hina.app.modules._
-import hina.app.publisher.EventCreatorHttpPost
+import hina.app.publisher.{ EventCreatorHttpPost, EventCreatorRabbitMQ }
 import hina.util.akka.GuiceAkkaExtension
 import net.codingwell.scalaguice.InjectorExtensions._
 
@@ -27,6 +27,7 @@ object Main extends App {
   system.actorOf(GuiceAkkaExtension(system).props(TopicCreator.Forwarder.name))
   system.actorOf(GuiceAkkaExtension(system).props(PublisherManager.Forwarder.name))
   system.actorOf(GuiceAkkaExtension(system).props(StarvingConsumer.name))
+  system.actorOf(GuiceAkkaExtension(system).props(EventCreatorRabbitMQ.name)) // @todo Pool 化
 
   sys.addShutdownHook {
     system.shutdown()

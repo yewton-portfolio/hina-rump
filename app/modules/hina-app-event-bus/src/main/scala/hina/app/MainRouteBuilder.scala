@@ -10,9 +10,6 @@ import org.apache.camel.model.rest.RestBindingMode
 
 import scala.beans.BeanProperty
 
-/**
- *
- */
 class MainRouteBuilder() extends RouteBuilder {
   case class ErrorResponse(@BeanProperty message: String, @BeanProperty detail: String)
 

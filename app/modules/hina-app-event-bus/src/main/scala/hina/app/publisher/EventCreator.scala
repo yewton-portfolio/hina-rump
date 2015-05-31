@@ -6,7 +6,7 @@ import com.google.inject.Inject
 import com.google.inject.name.Named
 import com.typesafe.config.Config
 import hina.app.modules.Providers.ZkExecutionContextProvider
-import hina.domain.publisher.PublisherTopicRepository
+import hina.domain.publisher.TopicPublisherRepository
 import hina.domain.{ Event, Topic }
 import hina.util.akka.NamedActor
 import org.apache.kafka.clients.producer.{ Callback, Producer, ProducerRecord, RecordMetadata }
@@ -30,7 +30,7 @@ object EventCreator extends NamedActor {
 }
 
 class EventCreator @Inject() (val config: Config,
-                              val repository: PublisherTopicRepository,
+                              val repository: TopicPublisherRepository,
                               val producer: Producer[String, Event],
                               @Named(ZkExecutionContextProvider.name) implicit val executionContext: ExecutionContext)
     extends Actor {

@@ -9,6 +9,11 @@ package object publisher {
   case class PublisherId(id: UUID)
   case class Publisher(@BeanProperty id: PublisherId, @BeanProperty name: String)
 
+  abstract sealed class PublisherPlugin
+  object PublisherPlugin {
+    case object RabbitMQ extends PublisherPlugin
+  }
+
   trait PublisherRepository {
     def nextIdentity: PublisherId
     def save(entity: Publisher): Unit

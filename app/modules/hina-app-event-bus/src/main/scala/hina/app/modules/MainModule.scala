@@ -8,8 +8,8 @@ import com.typesafe.config.Config
 import hina.app.RestConsumer
 import hina.app.admin.{ PublisherManager, StarvingConsumer, TopicCreator }
 import hina.app.modules.Providers.{ BlockingIOExecutionContextProvider, ZkExecutionContextProvider }
-import hina.app.publisher.{ EventCreator, EventCreatorHttpPost }
-import hina.domain.publisher.{ PublisherRepository, PublisherRepositoryOnMemory, PublisherTopicRepository, PublisherTopicRepositoryOnMemory }
+import hina.app.publisher.{ EventCreator, EventCreatorHttpPost, EventCreatorRabbitMQ }
+import hina.domain.publisher.{ PublisherRepository, PublisherRepositoryOnMemory, TopicPublisherRepository, TopicPublisherRepositoryOnMemory }
 import hina.domain.{ TopicConsumerRepository, TopicConsumerRepositoryOnMemory }
 import hina.util.akka.GuiceAkkaActorRefProvider
 import kafka.utils.ZKStringSerializer
@@ -28,7 +28,8 @@ class MainModule extends AbstractModule with ScalaModule with GuiceAkkaActorRefP
     bind[Actor].annotatedWithName(EventCreatorHttpPost.Forwarder.name).to[EventCreatorHttpPost.Forwarder]
     bind[Actor].annotatedWithName(EventCreatorHttpPost.name).to[EventCreatorHttpPost]
     bind[Actor].annotatedWithName(EventCreator.name).to[EventCreator]
-    bind[PublisherTopicRepository].to[PublisherTopicRepositoryOnMemory]
+    bind[Actor].annotatedWithName(EventCreatorRabbitMQ.name).to[EventCreatorRabbitMQ]
+    bind[TopicPublisherRepository].to[TopicPublisherRepositoryOnMemory]
     bind[TopicConsumerRepository].to[TopicConsumerRepositoryOnMemory]
     bind[PublisherRepository].to[PublisherRepositoryOnMemory]
     bind[ExecutionContext].annotatedWithName(ZkExecutionContextProvider.name).toProvider[ZkExecutionContextProvider]
@@ -46,7 +47,7 @@ class MainModule extends AbstractModule with ScalaModule with GuiceAkkaActorRefP
   @Named(RestConsumer.poolName)
   @Inject
   def provideRestConsumerPool(system: ActorSystem): Pool =
-    RoundRobinPool(10, Some(DefaultResizer(lowerBound = 5, upperBound = 100)))
+    RoundRobinPool(10, Some(DefaultResizer(lowerBound = 5, upperBound = 500)))
 
   @Provides
   @Named(PublisherManager.name)
@@ -71,7 +72,7 @@ class MainModule extends AbstractModule with ScalaModule with GuiceAkkaActorRefP
   def provideEventCreatorRef(system: ActorSystem): ActorRef =
     provideActorRef(
       system,
-      EventCreator.name, RoundRobinPool(2, Some(DefaultResizer(lowerBound = 1, upperBound = 500))))
+      EventCreator.name, RoundRobinPool(10, Some(DefaultResizer(lowerBound = 5, upperBound = 500))))
 
   @Provides
   @Named(EventCreatorHttpPost.name)
